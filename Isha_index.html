@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Mission Visualizations</title>
+    <link rel="stylesheet" href="Isha_style_con.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- Diverging Bar Chart -->
+        <section class="viz-section" id="viz1-section">
+            <div class="viz-container">
+                <h3>Mission Success vs Failure by Country</h3>
+                <p class="viz-description">Diverging bar chart comparing mission successes (green, extending right) and failures (red, extending left) across major space-faring nations. Shows how different countries' space programs have performed historically.</p>
+                <div id="diverging-chart"></div>
+            </div>
+        </section>
+
+        <!-- Slope Chart -->
+        <section class="viz-section" id="viz2-section">
+            <div class="viz-container">
+                <h3>Mission Failure Rate Shift by Country</h3>
+                <p class="viz-description">Slope chart comparing mission failure rates between 2000-2012 and 2013-2025 across major space-faring nations. Green lines show countries that improved (decreased failure rates), while red lines indicate worsening performance.</p>
+                <div id="slope-chart"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="Isha_script_con.js"></script>
+</body>
+</html>
