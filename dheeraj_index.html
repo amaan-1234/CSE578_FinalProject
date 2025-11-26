@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The True Cost of Space Exploration</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/topojson@3"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dheeraj_styles.css">
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<nav class="nav">
+  <a href="#intro" class="nav-btn active">Intro</a>
+  <a href="#missions" class="nav-btn">Mission Impact</a>
+  <a href="#debris" class="nav-btn">Space Debris</a>
+</nav>
+
+<section id="intro" class="section intro-section">
+  <h1>The True Cost of Space Exploration</h1>
+  <p>Behind every space mission lies a trail of environmental damage, massive financial waste, and dangerous debris. This is the hidden story of our cosmic ambitions.</p>
+  
+  <div class="intro-stats">
+    <div class="intro-stat">
+      <div class="intro-stat-number">$2.8T</div>
+      <div class="intro-stat-label">Global Space Spending</div>
+    </div>
+    <div class="intro-stat">
+      <div class="intro-stat-number">300M</div>
+      <div class="intro-stat-label">Tons CO₂ Emissions</div>
+    </div>
+    <div class="intro-stat">
+      <div class="intro-stat-number">34K+</div>
+      <div class="intro-stat-label">Tracked Debris Objects</div>
+    </div>
+    <div class="intro-stat">
+      <div class="intro-stat-number">75%</div>
+      <div class="intro-stat-label">Mission Failure Rate</div>
+    </div>
+  </div>
+</section>
+
+
+<section id="missions" class="section viz1-section">
+  <div class="viz-container">
+    <svg id="viz1" width="1000" height="600"></svg>
+    <div class="tooltip" style="opacity:0;"></div>
+    
+
+  </div>
+
+  <div class="story-steps">
+    <div class="step" data-step="0">
+      <div class="step-content">
+        <h2>Environmental Destruction</h2>
+        <p>Each petal represents environmental damage from space missions. Yellow petals show low impact, orange shows medium impact, and red shows severe environmental destruction.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="1">
+      <div class="step-content">
+        <h2>High Impact Missions</h2>
+        <p>Red petals reveal the most destructive space activities. These missions burn massive amounts of fuel, releasing toxic emissions while contributing to climate change.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="2">
+      <div class="step-content">
+        <h2>Economic Waste</h2>
+        <p>Larger petals indicate more missions and higher spending. Notice how environmental damage correlates with budget size.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="3">
+      <div class="step-content">
+        <h2>Global Impact</h2>
+        <p>Every country contributes to this cosmic waste. Hover over petals to see the staggering amounts spent on missions that often fail.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="4">
+      <div class="step-content">
+        <h2>The Full Picture</h2>
+        <p>This visualization reveals the complete environmental cost of space exploration. Each country's missions contribute to our planet's growing space debris problem.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="debris" class="section viz2-section">
+  <div class="viz2-header">
+    <h1>The Hidden Danger Above Us</h1>
+    <p>Space missions have created a <b>catastrophic debris field</b> around Earth. Over <b>34,000 tracked objects</b> and millions of smaller fragments now threaten every satellite, space station, and future mission.</p>
+  </div>
+
+  <div class="viz2-container">
+    <div class="viz2-sticky">
+      <div id="orbitViz"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#f94144;"></span>LEO: Critical Risk Zone</span>
+        <span><span class="swatch" style="background:#4d9de0;"></span>MEO: Navigation at Risk</span>
+        <span><span class="swatch" style="background:#90be6d;"></span>GEO: Communication Threats</span>
+      </div>
+      <div class="foot">Growing by 200+ objects yearly | Data: space-track.org</div>
+    </div>
+
+    <div class="debris-steps">
+      <div class="debris-step" data-zone="overview">
+        <div class="debris-step-content">
+          <h2>Overview: Earth Surrounded</h2>
+          <p>Our planet is encircled by a dangerous cloud of space debris. Each orbital zone tells a story of human activity and its consequences.</p>
+        </div>
+      </div>
+
+      <div class="debris-step" data-zone="LEO">
+        <div class="debris-step-content">
+          <h2>🔴 LEO: The Critical Zone</h2>
+          <p><strong>Most Dangerous:</strong> Low Earth Orbit contains 80% of all debris. Satellites here face constant collision threats from fragments traveling at 17,500 mph.</p>
+        </div>
+      </div>
+
+      <div class="debris-step" data-zone="MEO">
+        <div class="debris-step-content">
+          <h2>🔵 MEO: Navigation Under Threat</h2>
+          <p><strong>GPS at Risk:</strong> Medium Earth Orbit hosts our navigation satellites. Debris here could cripple global positioning systems worldwide.</p>
+        </div>
+      </div>
+
+      <div class="debris-step" data-zone="GEO">
+        <div class="debris-step-content">
+          <h2>🟢 GEO: Communication Crisis</h2>
+          <p><strong>Billion-Dollar Targets:</strong> Geostationary orbit contains our most expensive satellites. One collision could cost billions and disrupt global communications.</p>
+        </div>
+      </div>
+
+      <div class="debris-step" data-zone="future">
+        <div class="debris-step-content">
+          <h2>The Kessler Syndrome</h2>
+          <p><strong>Cascading Disaster:</strong> One collision creates thousands of new fragments, triggering a chain reaction that could make space unusable for generations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="dheeraj_script.js"></script>
+</body>
+</html>
