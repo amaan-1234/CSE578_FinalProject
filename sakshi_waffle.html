@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content-width, initial-scale=1.0">
+	<title>Morphing Space Missions Waffle Chart</title>
+	<link rel="stylesheet" href="sakshi_styles.css">
+	<script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+	<div id="chart">
+		<div class="title">🚀 Morphing Waffle Chart by Decade</div>
+		<div class="subtitle">Watch the waffle transform as you select different decades | Each square = 10 missions</div>
+        
+		<div class="controls-panel">
+			<div class="control-group">
+				<label for="yearSelect">Select Decade:</label>
+				<select id="yearSelect" class="year-dropdown">
+					<option value="all">All Decades Combined</option>
+				</select>
+			</div>
+			<div class="stats-display">
+				<div class="stat-box">
+					<span class="stat-number" id="currentCount">0</span>
+					<span class="stat-text">missions</span>
+				</div>
+			</div>
+		</div>
+
+		<div id="visualization"></div>
+        
+		<div class="legend-container">
+			<div class="legend-title">Color Guide</div>
+			<div id="legend"></div>
+		</div>
+	</div>
+	<div class="tooltip" id="tooltip"></div>
+
+	<script src="sakshi_waffle.js"></script>
+</body>
+</html>

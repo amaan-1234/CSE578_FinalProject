@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Space Launches Streamgraph</title>
+    <link rel="stylesheet" href="sakshi_styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div id="chart">
+        <div class="title">🚀 Interactive Space Launches Streamgraph</div>
+        <div class="subtitle">Launch Count by Year and Company Type (State vs Private) | Hover, Click, and Explore!</div>
+        <div id="visualization"></div>
+        <div class="controls">
+            <div style="margin-bottom: 15px; color: #888; font-size: 14px; font-weight: bold;">📅 Select Time Period Range</div>
+            <div class="range-slider-container">
+                <div class="range-slider-wrapper">
+                    <div id="rangeSliderTrack" class="range-slider-track">
+                        <div id="rangeSliderFill" class="range-slider-fill"></div>
+                    </div>
+                    <input type="range" class="range-slider-input" id="rangeStart" min="0" max="100" value="0">
+                    <input type="range" class="range-slider-input" id="rangeEnd" min="0" max="100" value="100">
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; padding: 0 10px;">
+                    <span id="rangeStartLabel" style="color: #4CAF50; font-weight: bold; font-size: 16px;">2009</span>
+                    <button class="control-btn" id="resetPeriodBtn" style="padding: 5px 15px; font-size: 12px;">🔄 Reset Range</button>
+                    <span id="rangeEndLabel" style="color: #FF6B35; font-weight: bold; font-size: 16px;">2020</span>
+                </div>
+            </div>
+        </div>
+        <div class="stats-panel">
+            <div class="stat-item">
+                <div class="stat-value" id="totalLaunches">-</div>
+                <div class="stat-label">Total Launches</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stateLaunches">-</div>
+                <div class="stat-label">State Launches</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="privateLaunches">-</div>
+                <div class="stat-label">Private Launches</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="yearRange">-</div>
+                <div class="stat-label">Year Range</div>
+            </div>
+        </div>
+        <div class="legend">
+            <div class="legend-item" data-type="State">
+                <div class="legend-color" style="background-color: #4CAF50;"></div>
+                <span>State Organizations (Click to isolate)</span>
+            </div>
+            <div class="legend-item" data-type="Private">
+                <div class="legend-color" style="background-color: #FF6B35;"></div>
+                <span>Private Companies (Click to isolate)</span>
+            </div>
+        </div>
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="sakshi_streamgraph.js"></script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+// Company type mapping
+const companyTypeMapping = {
+	// State organizations
+	'CASC': 'State', 'Roscosmos': 'State', 'ISRO': 'State', 'JAXA': 'State',
+	'VKS RF': 'State', 'ISA': 'State', 'IRGC': 'State', 'ESA': 'State',
+	'KARI': 'State', 'CNSA': 'State', 'Khrunichev': 'State', 'KCST': 'State',
+	'NASA': 'State', 'Kosmotras': 'State', 'Eurockot': 'State',
+    
+	// Private companies
+	'SpaceX': 'Private', 'ULA': 'Private', 'Arianespace': 'Private',
+	'Rocket Lab': 'Private', 'Blue Origin': 'Private', 'Virgin Orbit': 'Private',
+	'Northrop': 'Private', 'MHI': 'Private', 'ExPace': 'Private',
+	'i-Space': 'Private', 'OneSpace': 'Private', 'Exos': 'Private',
+	'IAI': 'Private', 'Firefly': 'Private', 'Astra': 'Private',
+	'Relativity': 'Private', 'ABL': 'Private', 'Sea Launch': 'Private',
+	'ILS': 'Private', 'Land Launch': 'Private', 'Landspace': 'Private',
+	'CASIC': 'Private'
+};
+
+// Set up dimensions
+const margin = {top: 40, right: 50, bottom: 60, left: 60};
+const width = 1200 - margin.left - margin.right;
+const height = 600 - margin.top - margin.bottom;
+
+// Create SVG
+const svg = d3.select("#visualization")
+	.append("svg")
+	.attr("width", width + margin.left + margin.right)
+	.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+	.attr("transform", `translate(${margin.left},${margin.top})`);
+
+// Tooltip
+const tooltip = d3.select("#tooltip");
+
+// Global variables
+let years, aggregated, series, xScale, yScale, layers;
+let selectedType = null;
+let allYears, allProcessedData;
+let startYearIndex = 0;
+let endYearIndex = 0;
+
+// Load and process data
+fetch("Space_Corrected.csv")
+	.then(response => response.text())
+	.then(csvText => {
+		const data = d3.csvParse(csvText);
+		processData(data);
+	})
+	.catch(error => {
+		console.error("Error loading the CSV file:", error);
+		d3.select("#visualization")
+			.append("p")
+			.style("color", "red")
+			.text("Error loading data. Make sure 'Space_Corrected.csv' is in the same directory.");
+	});
+
+function processData(data) {
+	// Process data
+	allProcessedData = data.map(d => {
+		const dateString = d.Datum;
+		let year = null;
+		const yearMatch = dateString.match(/(\d{4})/);
+		if (yearMatch) year = +yearMatch[1];
+        
+		const companyName = d['Company Name'];
+		let companyType = 'Private';
+        
+		for (const [company, type] of Object.entries(companyTypeMapping)) {
+			if (companyName && companyName.includes(company)) {
+				companyType = type;
+				break;
+			}
+		}
+        
+		return { year, companyType, company: companyName };
+	}).filter(d => d.year !== null);
+    
+	const processedData = allProcessedData;
+
+	// Aggregate by year and company type
+	aggregated = d3.rollup(
+		processedData,
+		v => v.length,
+		d => d.year,
+		d => d.companyType
+	);
+
+	// Get all years and sort them
+	allYears = Array.from(new Set(processedData.map(d => d.year))).sort((a, b) => a - b);
+	years = [...allYears];
+    
+	// Update slider range
+	const slider = d3.select("#yearSlider");
+	slider.attr("min", 0).attr("max", years.length - 1).attr("value", years.length - 1);
+    
+	// Initialize period sliders
+	endYearIndex = allYears.length - 1;
+	const rangeStart = d3.select("#rangeStart");
+	const rangeEnd = d3.select("#rangeEnd");
+	rangeStart.attr("min", 0).attr("max", allYears.length - 1).attr("value", 0);
+	rangeEnd.attr("min", 0).attr("max", allYears.length - 1).attr("value", allYears.length - 1);
+	d3.select("#rangeStartLabel").text(allYears[0]);
+	d3.select("#rangeEndLabel").text(allYears[allYears.length - 1]);
+    
+	// Update stats
+	updateStats(processedData, years);
+    
+	// Draw the visualization
+	drawVisualization();
+}
+
+function updateStats(processedData, yearsArray) {
+	const totalLaunches = processedData.length;
+	const stateLaunches = processedData.filter(d => d.companyType === 'State').length;
+	const privateLaunches = processedData.filter(d => d.companyType === 'Private').length;
+    
+	animateValue("totalLaunches", 0, totalLaunches, 1000);
+	animateValue("stateLaunches", 0, stateLaunches, 1000);
+	animateValue("privateLaunches", 0, privateLaunches, 1000);
+	d3.select("#yearRange").text(`${yearsArray[0]} - ${yearsArray[yearsArray.length - 1]}`);
+}
+
+function animateValue(id, start, end, duration) {
+	const element = d3.select(`#${id}`);
+	const range = end - start;
+	const increment = end > start ? 1 : -1;
+	const stepTime = Math.abs(Math.floor(duration / range));
+	let current = start;
+    
+	const timer = setInterval(() => {
+		current += increment;
+		element.text(current);
+		if (current === end) clearInterval(timer);
+	}, stepTime);
+}
+
+function drawVisualization() {
+	const companyTypes = ['State', 'Private'];
+    
+	// Prepare data for stacking
+	const stackData = years.map(year => {
+		const obj = {year: year};
+		companyTypes.forEach(type => {
+			obj[type] = aggregated.get(year)?.get(type) || 0;
+		});
+		return obj;
+	});
+
+	// Stack the data
+	const stack = d3.stack()
+		.keys(companyTypes)
+		.offset(d3.stackOffsetWiggle)
+		.order(d3.stackOrderNone);
+
+	series = stack(stackData);
+
+	// Set up scales
+	xScale = d3.scaleLinear()
+		.domain(d3.extent(years))
+		.range([0, width]);
+
+	yScale = d3.scaleLinear()
+		.domain([
+			d3.min(series, s => d3.min(s, d => d[0])),
+			d3.max(series, s => d3.max(s, d => d[1]))
+		])
+		.range([height, 0]);
+
+			// Color scale with gradient
+			const colorScale = d3.scaleOrdinal()
+				.domain(['State', 'Private'])
+				.range(['#4CAF50', '#FF6B35']); // Green for State, Orange for Private    // Area generator
+	const area = d3.area()
+		.x(d => xScale(d.data.year))
+		.y0(d => yScale(d[0]))
+		.y1(d => yScale(d[1]))
+		.curve(d3.curveBasis);
+
+	// Draw the streamgraph with animation
+	layers = svg.selectAll(".layer")
+		.data(series)
+		.enter()
+		.append("path")
+		.attr("class", "layer")
+		.attr("d", area)
+		.attr("fill", d => colorScale(d.key))
+		.attr("opacity", 0)
+		.on("click", function(event, d) {
+			toggleLayer(d.key);
+		})
+		.on("mouseover", function(event, d) {
+			if (!selectedType || selectedType === d.key) {
+				d3.select(this)
+					.classed("highlighted", true)
+					.attr("stroke", "#fff")
+					.attr("stroke-width", 2);
+			}
+		})
+		.on("mouseout", function(event, d) {
+			d3.select(this)
+				.classed("highlighted", false)
+				.attr("stroke", "none");
+		})
+		.on("mousemove", function(event, d) {
+			const [mouseX] = d3.pointer(event);
+			const year = Math.round(xScale.invert(mouseX));
+			const value = aggregated.get(year)?.get(d.key) || 0;
+			const stateValue = aggregated.get(year)?.get('State') || 0;
+			const privateValue = aggregated.get(year)?.get('Private') || 0;
+			const total = stateValue + privateValue;
+			const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+            
+			tooltip
+				.style("display", "block")
+				.style("left", (event.pageX + 10) + "px")
+				.style("top", (event.pageY - 20) + "px")
+				.html(`
+					<div style="border-bottom: 2px solid ${d.key === 'State' ? '#4CAF50' : '#FF6B35'}; padding-bottom: 5px; margin-bottom: 5px;">
+						<strong style="font-size: 14px;">${d.key} Organizations</strong>
+					</div>
+					<div style="margin: 5px 0;">4c5 <strong>Year:</strong> ${year}</div>
+					<div style="margin: 5px 0;">680 <strong>Launches:</strong> ${value}</div>
+					<div style="margin: 5px 0;">4ca <strong>Share:</strong> ${percentage}% of total</div>
+					<div style="margin-top: 8px; padding-top: 5px; border-top: 1px solid #444; font-size: 11px; color: #aaa;">
+						Total launches in ${year}: ${total}
+					</div>
+				`);
+		})
+		.on("mouseleave", function() {
+			tooltip.style("display", "none");
+		});
+    
+	// Animate layers in
+	layers.transition()
+		.duration(1500)
+		.delay((d, i) => i * 200)
+		.attr("opacity", 0.8);
+
+	// Add year line and label
+	const yearLine = svg.append("line")
+		.attr("class", "year-line")
+		.attr("y1", 0)
+		.attr("y2", height);
+    
+	const yearLabel = svg.append("text")
+		.attr("class", "year-label")
+		.attr("text-anchor", "middle");
+
+	const overlay = svg.append("rect")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("fill", "none")
+		.attr("pointer-events", "none")
+		.lower(); // Move to back
+    
+	// Add hover zone for year tracking
+	svg.on("mousemove", function(event) {
+		const [mouseX] = d3.pointer(event);
+		if (mouseX >= 0 && mouseX <= width) {
+			const year = Math.round(xScale.invert(mouseX));
+            
+			yearLine
+				.attr("x1", mouseX)
+				.attr("x2", mouseX)
+				.attr("opacity", 0.3);
+            
+			yearLabel
+				.attr("x", mouseX)
+				.attr("y", -10)
+				.text(year)
+				.attr("opacity", 0.8);
+		}
+	})
+	.on("mouseleave", function() {
+		yearLine.attr("opacity", 0);
+		yearLabel.attr("opacity", 0);
+	});
+
+			// Add X axis
+			const xAxis = d3.axisBottom(xScale)
+				.tickFormat(d3.format("d"))
+				.ticks(20);
+
+			svg.append("g")
+				.attr("class", "axis x-axis")
+				.attr("transform", `translate(0,${height})`)
+				.call(xAxis)
+				.selectAll("text")
+				.attr("transform", "rotate(-45)")
+				.style("text-anchor", "end");
+
+			// Add vertical year separator lines
+			years.forEach(year => {
+				svg.append("line")
+					.attr("x1", xScale(year))
+					.attr("x2", xScale(year))
+					.attr("y1", 0)
+					.attr("y2", height)
+					.attr("stroke", "#444")
+					.attr("stroke-width", 1)
+					.attr("opacity", 0.3)
+					.attr("stroke-dasharray", "2,4")
+					.style("filter", "blur(0.5px)")
+					.lower(); // Move to back
+			});    // Add Y axis
+	svg.append("g")
+		.attr("class", "axis y-axis")
+		.call(d3.axisLeft(yScale).ticks(10));
+
+	// Add axis labels
+	svg.append("text")
+		.attr("transform", `translate(${width/2},${height + 50})`)
+		.style("text-anchor", "middle")
+		.style("fill", "#888")
+		.style("font-size", "14px")
+		.text("Year");
+
+	svg.append("text")
+		.attr("transform", "rotate(-90)")
+		.attr("y", 0 - margin.left)
+		.attr("x", 0 - (height / 2))
+		.attr("dy", "1em")
+		.style("text-anchor", "middle")
+		.style("fill", "#888")
+		.style("font-size", "14px")
+		.text("Launch Count (Streamgraph Offset)");
+    
+	setupControls();
+}
+
+function toggleLayer(type) {
+	if (selectedType === type) {
+		selectedType = null;
+		layers.classed("dimmed", false);
+		// Remove white outline
+		layers.attr("stroke", "none").attr("stroke-width", 0);
+	} else {
+		selectedType = type;
+		layers.each(function(d) {
+			const isSelected = d.key === type;
+			d3.select(this)
+				.classed("dimmed", !isSelected)
+				.attr("stroke", isSelected ? "#fff" : "none")
+				.attr("stroke-width", isSelected ? 2 : 0);
+		});
+	}
+}
+
+	function setupControls() {
+		// Legend click
+		d3.selectAll(".legend-item").on("click", function() {
+			const type = d3.select(this).attr("data-type");
+			toggleLayer(type);
+		});
+        
+		// Period range sliders
+		const rangeStart = d3.select("#rangeStart");
+		const rangeEnd = d3.select("#rangeEnd");
+		const rangeStartLabel = d3.select("#rangeStartLabel");
+		const rangeEndLabel = d3.select("#rangeEndLabel");
+		const rangeFill = d3.select("#rangeSliderFill");
+        
+		function updateRangeFill() {
+			const startPercent = (startYearIndex / (allYears.length - 1)) * 100;
+			const endPercent = (endYearIndex / (allYears.length - 1)) * 100;
+			rangeFill.style("left", startPercent + "%");
+			rangeFill.style("width", (endPercent - startPercent) + "%");
+		}
+        
+		rangeStart.on("input", function() {
+			startYearIndex = +this.value;
+			if (startYearIndex > endYearIndex) {
+				startYearIndex = endYearIndex;
+				this.value = startYearIndex;
+			}
+			rangeStartLabel.text(allYears[startYearIndex]);
+			updateRangeFill();
+			updatePeriod();
+		});
+        
+		rangeEnd.on("input", function() {
+			endYearIndex = +this.value;
+			if (endYearIndex < startYearIndex) {
+				endYearIndex = startYearIndex;
+				this.value = endYearIndex;
+			}
+			rangeEndLabel.text(allYears[endYearIndex]);
+			updateRangeFill();
+			updatePeriod();
+		});
+        
+		// Reset period button
+		d3.select("#resetPeriodBtn").on("click", function() {
+			startYearIndex = 0;
+			endYearIndex = allYears.length - 1;
+			d3.select("#rangeStart").property("value", 0);
+			d3.select("#rangeEnd").property("value", allYears.length - 1);
+			d3.select("#rangeStartLabel").text(allYears[0]);
+			d3.select("#rangeEndLabel").text(allYears[allYears.length - 1]);
+			updateRangeFill();
+			updatePeriod();
+		});
+        
+		// Initialize range fill
+		updateRangeFill();
+	}
+    
+	function updatePeriod() {
+		// Filter data to selected period
+		const startYear = allYears[startYearIndex];
+		const endYear = allYears[endYearIndex];
+        
+		const filteredData = allProcessedData.filter(d => d.year >= startYear && d.year <= endYear);
+		years = allYears.slice(startYearIndex, endYearIndex + 1);
+        
+		// Reaggregate data
+		aggregated = d3.rollup(
+			filteredData,
+			v => v.length,
+			d => d.year,
+			d => d.companyType
+		);
+        
+		// Update stats
+		updateStats(filteredData, years);
+        
+		// Redraw visualization
+		redrawVisualization();
+	}
+    
+	function redrawVisualization() {
+		const companyTypes = ['State', 'Private'];
+        
+		// Prepare data for stacking
+		const stackData = years.map(year => {
+			const obj = {year: year};
+			companyTypes.forEach(type => {
+				obj[type] = aggregated.get(year)?.get(type) || 0;
+			});
+			return obj;
+		});
+
+		// Stack the data
+		const stack = d3.stack()
+			.keys(companyTypes)
+			.offset(d3.stackOffsetWiggle)
+			.order(d3.stackOrderNone);
+
+		series = stack(stackData);
+
+		// Update scales
+		xScale.domain(d3.extent(years));
+		yScale.domain([
+			d3.min(series, s => d3.min(s, d => d[0])),
+			d3.max(series, s => d3.max(s, d => d[1]))
+		]);
+
+		// Update axes
+		svg.select(".x-axis")
+			.transition()
+			.duration(750)
+			.call(d3.axisBottom(xScale).tickFormat(d3.format("d")).ticks(Math.min(20, years.length)));
+        
+		svg.select(".y-axis")
+			.transition()
+			.duration(750)
+			.call(d3.axisLeft(yScale).ticks(10));
+
+		// Update layers
+		const colorScale = d3.scaleOrdinal()
+			.domain(['State', 'Private'])
+			.range(['#4CAF50', '#FF6B35']);
+
+		const area = d3.area()
+			.x(d => xScale(d.data.year))
+			.y0(d => yScale(d[0]))
+			.y1(d => yScale(d[1]))
+			.curve(d3.curveBasis);
+
+		layers.data(series)
+			.transition()
+			.duration(750)
+			.attr("d", area);
+	}
+    
+	function highlightYear(year) {
+		layers.transition()
+			.duration(300)
+			.attr("opacity", d => {
+				const hasData = aggregated.get(year)?.get(d.key) > 0;
+				return hasData ? 0.8 : 0.2;
+			});
+        
+		// Update stats for the selected year
+		const stateValue = aggregated.get(year)?.get('State') || 0;
+		const privateValue = aggregated.get(year)?.get('Private') || 0;
+		const total = stateValue + privateValue;
+        
+		d3.select("#totalLaunches").text(total);
+		d3.select("#stateLaunches").text(stateValue);
+		d3.select("#privateLaunches").text(privateValue);
+		d3.select("#yearRange").text(year);
+	}
