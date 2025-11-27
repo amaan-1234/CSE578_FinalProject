@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Near Earth Object Visuals</title>
+  <link rel="stylesheet" href="Abbhijit_style.css">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Near-Earth Object Visualization Dashboard</h1>
+    <p>Interactive charts exploring asteroid close approaches using NASA's NEO dataset.</p>
+  </header>
+  <section class="chart-section">
+      <h2>Approaches by Year</h2>
+      <p class="description">
+          Visualizing the yearly increase in NEO detections.<br>
+          The rise after 2010 reflects improvements in observation technology.
+      </p>
+      <div id="barChart" class="chart-box"></div>
+  </section>
+  <section class="chart-section">
+      <h2>Closest Approaches (Top 20)</h2>
+      <p class="description">
+          A simplified scatter plot showing only the 20 closest-known asteroid approaches.<br>
+          • X-axis = Brightness (H-mag)<br>
+          • Y-axis = Miss Distance (LD)<br>
+          • Larger dots ≈ Larger asteroids
+      </p>
+      <div id="scatterPlot" class="chart-box narrow-box"></div>
+  </section>
+  <script src="Abbhijit_script.js"></script>
+</body>
+</html>
