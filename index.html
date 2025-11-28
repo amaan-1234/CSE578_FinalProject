@@ -11,6 +11,8 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
   <script src="https://unpkg.com/topojson@3"></script>
+  <script src="https://unpkg.com/intersection-observer@0.12.0/intersection-observer.js"></script>
+  <script src="https://unpkg.com/scrollama"></script>
 
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
@@ -34,15 +36,20 @@
       <p>Technological advancement, scientific discovery, and economic growth.</p>
     </div>
 
-    <!-- Abbhijit: NEOs -->
-    <div class="viz-card">
-      <div class="viz-title">Near-Earth Objects: Monitoring Potential Threats</div>
+    <!-- Abbhijit: NEOs - Bar Chart -->
+    <div class="viz-card scroll-section" data-step="0">
+      <div class="viz-title">Near-Earth Objects: Hazard Classification</div>
       <div id="barChart"></div>
-      <div id="scatterPlot" style="margin-top: 2rem;"></div>
+    </div>
+
+    <!-- Abbhijit: NEOs - Scatter Plot -->
+    <div class="viz-card scroll-section" data-step="1">
+      <div class="viz-title">Near-Earth Objects: Size vs Distance Analysis</div>
+      <div id="scatterPlot"></div>
     </div>
 
     <!-- Sakshi: Streamgraph -->
-    <div class="viz-card">
+    <div class="viz-card scroll-section" data-step="2">
       <div class="viz-title">The Rise of Commercial Spaceflight</div>
       <div class="controls">
         <div class="control-group">
@@ -72,7 +79,7 @@
     </div>
 
     <!-- Sakshi: Waffle -->
-    <div class="viz-card">
+    <div class="viz-card scroll-section" data-step="3">
       <div class="viz-title">Missions by Decade</div>
       <div class="controls">
         <div class="control-group">
@@ -91,11 +98,16 @@
       <div id="tooltip-waffle" class="tooltip" style="display:none;"></div>
     </div>
 
-    <!-- Sanyam: Chord & Shield -->
-    <div class="viz-card">
-      <div class="viz-title">Space Ecosystem & Mission Success</div>
+    <!-- Sanyam: Chord Diagram -->
+    <div class="viz-card scroll-section" data-step="4">
+      <div class="viz-title">Space Ecosystem Collaboration Network</div>
       <div id="vis-container-1"></div>
-      <div id="vis-container-2" style="margin-top:2rem;"></div>
+    </div>
+
+    <!-- Sanyam: Shield Diagram -->
+    <div class="viz-card scroll-section" data-step="5">
+      <div class="viz-title">Mission Success Shield Analysis</div>
+      <div id="vis-container-2"></div>
     </div>
 
     <!-- CONS SECTION -->
@@ -104,22 +116,26 @@
       <p>Space debris, environmental impact, and mission failures.</p>
     </div>
 
-    <!-- Isha: Diverging & Slope -->
-    <div class="viz-card">
-      <div class="viz-title">Mission Success vs. Failure</div>
+    <!-- Isha: Diverging Chart -->
+    <div class="viz-card scroll-section" data-step="6">
+      <div class="viz-title">Mission Success vs. Failure by Country</div>
       <div id="viz1-section" class="viz-section">
         <div id="diverging-chart"></div>
       </div>
-      <div id="viz2-section" class="viz-section" style="margin-top: 2rem;">
+    </div>
+
+    <!-- Isha: Slope Chart -->
+    <div class="viz-card scroll-section" data-step="7">
+      <div class="viz-title">Success Rate Trends Over Time</div>
+      <div id="viz2-section" class="viz-section">
         <div id="slope-chart"></div>
       </div>
     </div>
 
-    <!-- Dheeraj: Petals & Orbit -->
-    <div class="viz-card">
-      <div class="viz-title">Environmental Impact & Space Debris</div>
+    <!-- Dheeraj: Petals Chart -->
+    <div class="viz-card scroll-section" data-step="8">
+      <div class="viz-title">Environmental Cost by Country</div>
       <div id="missions" style="position:relative;">
-        <h3>Environmental Cost by Country</h3>
         <svg id="viz-petals" width="1000" height="600"></svg>
         <div class="steps-container" style="display:none;">
           <div class="step"></div>
@@ -127,8 +143,12 @@
           <div class="step"></div>
         </div>
       </div>
-      <div id="debris" style="margin-top: 2rem; position:relative;">
-        <h3>Orbital Debris Heatmap</h3>
+    </div>
+
+    <!-- Dheeraj: Orbital Debris Heatmap -->
+    <div class="viz-card scroll-section" data-step="9">
+      <div class="viz-title">Orbital Debris Heatmap</div>
+      <div id="debris" style="position:relative;">
         <div id="viz-orbit" style="width:100%; height:600px;"></div>
         <div class="debris-steps" style="display:none;">
           <div class="debris-step" data-zone="overview"></div>
@@ -139,11 +159,10 @@
       </div>
     </div>
 
-    <!-- Original: Ratio & Time -->
-    <div class="viz-card">
-      <div class="viz-title">Debris-to-Payload Ratio & Accumulation</div>
+    <!-- Original: Debris-to-Payload Ratio -->
+    <div class="viz-card scroll-section" data-step="10">
+      <div class="viz-title">Debris-to-Payload Ratio by Country</div>
       <section id="ratioSec">
-        <h3>Debris-to-Payload Ratio by Country</h3>
         <div class="controls">
           <label class="pill">Top-N:
             <input type="range" id="topNSlider" min="5" max="25" step="1" value="15" />
@@ -164,13 +183,15 @@
         </div>
         <svg id="ratioSvg" width="100%" height="560"></svg>
       </section>
+    </div>
 
-      <section id="timeSec" style="margin-top: 2rem;">
-        <h3>Objects in Orbit Over Time</h3>
+    <!-- Original: Objects in Orbit Over Time -->
+    <div class="viz-card scroll-section" data-step="11">
+      <div class="viz-title">Objects in Orbit Over Time</div>
+      <section id="timeSec">
         <svg id="timeSvg" width="100%" height="420"></svg>
         <svg id="brushSvg" width="100%" height="120"></svg>
       </section>
-
       <div id="status" style="font-size:0.8rem; color:#64748b; margin-top:1rem;"></div>
     </div>
 
@@ -184,6 +205,7 @@
   <script src="dheeraj_script.js"></script>
   <script src="sanyam_script.js"></script>
   <script src="original_script.js?v=4"></script>
+  <script src="scrollama.js"></script>
 
 </body>
 
