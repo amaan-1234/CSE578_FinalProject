@@ -19,6 +19,7 @@
 <body>
 
   <canvas id="stars-dheeraj"></canvas>
+  <div id="tooltip" class="tooltip" style="display:none;"></div>
 
   <header>
     <h1>Beyond Earth: Do Space missions matter?</h1>
@@ -59,7 +60,7 @@
           <span id="rangeEndLabel-stream"></span>
         </div>
         <button id="resetPeriodBtn-stream"
-          style="background:#3b82f6; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Reset</button>
+          style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Reset</button>
       </div>
       <div style="display:flex; gap:2rem; margin-bottom:1rem; font-size:0.9rem;">
         <div>Total: <strong id="totalLaunches-stream">0</strong></div>
@@ -97,7 +98,6 @@
       <div id="vis-container-2" style="margin-top:2rem;"></div>
     </div>
 
-
     <!-- CONS SECTION -->
     <div class="section-header cons-section">
       <h2>CONS: The Costs and Risks</h2>
@@ -118,7 +118,6 @@
     <!-- Dheeraj: Petals & Orbit -->
     <div class="viz-card">
       <div class="viz-title">Environmental Impact & Space Debris</div>
-
       <div id="missions" style="position:relative;">
         <h3>Environmental Cost by Country</h3>
         <svg id="viz-petals" width="1000" height="600"></svg>
@@ -128,7 +127,6 @@
           <div class="step"></div>
         </div>
       </div>
-
       <div id="debris" style="margin-top: 2rem; position:relative;">
         <h3>Orbital Debris Heatmap</h3>
         <div id="viz-orbit" style="width:100%; height:600px;"></div>
@@ -144,7 +142,6 @@
     <!-- Original: Ratio & Time -->
     <div class="viz-card">
       <div class="viz-title">Debris-to-Payload Ratio & Accumulation</div>
-
       <section id="ratioSec">
         <h3>Debris-to-Payload Ratio by Country</h3>
         <div class="controls">
@@ -186,7 +183,7 @@
   <script src="Isha_script_con.js"></script>
   <script src="dheeraj_script.js"></script>
   <script src="sanyam_script.js"></script>
-  <script src="original_script.js"></script>
+  <script src="original_script.js?v=4"></script>
 
 </body>
 

@@ -15,6 +15,11 @@
 
   function parseAnyDate(x) {
     if (!x) return null;
+    x = String(x).trim();
+    // Handle 4-digit year directly
+    if (/^\d{4}$/.test(x)) {
+      return new Date(+x, 0, 1);
+    }
     // Common formats: 2005-06-12, 2012/03/01, 3/1/2012, etc.
     const d = new Date(x);
     if (!isNaN(d)) return d;
@@ -61,16 +66,13 @@
   // --- Build both charts ----------------------------------------------------
   function buildAll() {
     if (!satRows) return;
-    console.log('buildAll: Building charts with', satRows.length, 'rows');
     try {
       buildRatioChart(satRows);
-      console.log('buildAll: Ratio chart complete');
     } catch (err) {
       console.error('buildAll: Error in buildRatioChart:', err);
     }
     try {
       buildTimeChart(satRows);
-      console.log('buildAll: Time chart complete');
     } catch (err) {
       console.error('buildAll: Error in buildTimeChart:', err);
     }
@@ -253,12 +255,6 @@
     const brushSvg = d3.select('#brushSvg');
     if (svg.empty()) return;
 
-    console.log('buildTimeChart: Starting with', rows.length, 'rows');
-    if (rows.length > 0) {
-      console.log('First row columns:', Object.keys(rows[0]));
-      console.log('First row sample:', rows[0]);
-    }
-
     svg.selectAll('*').remove();
     brushSvg.selectAll('*').remove();
 
@@ -275,13 +271,6 @@
       type: normalizeType(r.OBJECT_TYPE)
     })).filter(d => d.year && ['PAYLOAD', 'DEBRIS', 'ROCKET BODY'].includes(d.type));
 
-    console.log('Cleaned data count:', cleaned.length);
-    if (cleaned.length > 0) {
-      console.log('Sample cleaned:', cleaned.slice(0, 3));
-    } else {
-      console.warn('No data after cleaning! Check column names.');
-    }
-
     const countsByYearType = d3.rollups(
       cleaned,
       v => v.length,
@@ -289,13 +278,8 @@
       d => d.type
     );
 
-    console.log('countsByYearType:', countsByYearType.slice(0, 3));
-
     const years = Array.from(new Set(cleaned.map(d => d.year))).sort((a, b) => a - b);
     const types = ['PAYLOAD', 'DEBRIS', 'ROCKET BODY'];
-
-    console.log('Years range:', years.length > 0 ? `${years[0]} - ${years[years.length - 1]}` : 'none');
-    console.log('Years:', years.slice(0, 10));
 
     const series = types.map(t => {
       let cumulative = 0;
@@ -309,17 +293,16 @@
       };
     });
 
-    console.log('Series data:', series.map(s => ({ key: s.key, valueCount: s.values.length, maxCount: d3.max(s.values, d => d.count) })));
-
     const x = d3.scaleLinear().domain(d3.extent(years)).range([0, innerW]);
     const y = d3.scaleLinear()
       .domain([0, d3.max(series, s => d3.max(s.values, d => d.count)) * 1.1 || 10])
       .nice()
       .range([innerH, 0]);
 
+    // Use hex codes directly to ensure visibility
     const color = d3.scaleOrdinal()
       .domain(types)
-      .range(['var(--blue)', 'var(--orange)', 'var(--green)']);
+      .range(['#3b82f6', '#f97316', '#10b981']);
 
     // Axes
     g.append('g').attr('class', 'axis')
@@ -332,15 +315,26 @@
       .call(d3.axisLeft(y).tickSize(-innerW).tickFormat(''))
       .selectAll('line').attr('stroke-opacity', 0.3);
 
+    // Add clip path to prevent lines from crossing axes
+    svg.append('defs').append('clipPath')
+      .attr('id', 'time-chart-clip')
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', innerW)
+      .attr('height', innerH);
+
     // Lines
     const line = d3.line()
       .x(d => x(d.year))
       .y(d => y(d.count))
       .curve(d3.curveMonotoneX);
 
-    const seriesG = g.append('g');
+    const seriesG = g.append('g')
+      .attr('clip-path', 'url(#time-chart-clip)');
+
     const paths = seriesG.selectAll('.series').data(series, d => d.key).join(enter => {
-      const sg = enter.append('g').attr('class', 'series').attr('data-key', d => d.key);
+      const sg = enter.append('g').attr('class', 'series active').attr('data-key', d => d.key);
       sg.append('path')
         .attr('fill', 'none')
         .attr('stroke', d => color(d.key))
@@ -349,25 +343,81 @@
       return sg;
     });
 
-    // Legend
+    // Add invisible hover areas for tooltips
+    const hoverG = g.append('g').attr('clip-path', 'url(#time-chart-clip)');
+    series.forEach(s => {
+      const hoverArea = hoverG.append('g')
+        .attr('class', 'hover-area')
+        .attr('data-key', s.key);
+
+      s.values.forEach(point => {
+        hoverArea.append('circle')
+          .attr('cx', x(point.year))
+          .attr('cy', y(point.count))
+          .attr('r', 6)
+          .attr('fill', 'transparent')
+          .attr('stroke', 'transparent')
+          .style('cursor', 'pointer')
+          .on('mouseenter', function (ev) {
+            d3.select(this).attr('fill', color(s.key)).attr('stroke', '#fff').attr('stroke-width', 2);
+            if (!tip.empty()) {
+              tip.style('display', 'block')
+                .html(`<strong>${s.key}</strong><br/>Year: ${point.year}<br/>Count: ${fmt(point.count)}`);
+              tip.style('left', (ev.pageX + 12) + 'px')
+                .style('top', (ev.pageY + 12) + 'px');
+            }
+          })
+          .on('mousemove', function (ev) {
+            if (!tip.empty()) {
+              tip.style('left', (ev.pageX + 12) + 'px')
+                .style('top', (ev.pageY + 12) + 'px');
+            }
+          })
+          .on('mouseleave', function () {
+            d3.select(this).attr('fill', 'transparent').attr('stroke', 'transparent');
+            if (!tip.empty()) tip.style('display', 'none');
+          });
+      });
+    });
+
+    // Legend with checkboxes
     const legend = svg.append('g').attr('class', 'legend')
       .attr('transform', `translate(${margin.left + 20}, 20)`);
 
     types.forEach((t, i) => {
-      const lg = legend.append('g').attr('class', 'legend-item active')
-        .attr('transform', `translate(${i * 140},0)`)
-        .on('click', function () {
-          const el = d3.select(this);
-          const isActive = el.classed('active');
-          el.classed('active', !isActive).classed('inactive', isActive);
-          const sPath = seriesG.select(`.series[data-key="${t}"]`);
-          if (isActive) sPath.classed('series-hidden', true);
-          else sPath.classed('series-hidden', false);
-        });
+      const lg = legend.append('g').attr('class', 'legend-item')
+        .attr('transform', `translate(${i * 160},0)`);
 
-      lg.append('rect').attr('width', 12).attr('height', 12).attr('rx', 2)
-        .attr('fill', color(t)).attr('class', 'legend-indicator');
-      lg.append('text').attr('x', 18).attr('y', 10).text(t);
+      // Checkbox
+      const checkbox = lg.append('foreignObject')
+        .attr('width', 16)
+        .attr('height', 16)
+        .attr('y', -4)
+        .html(`<input type="checkbox" checked style="cursor:pointer; width:14px; height:14px;" data-type="${t}" />`);
+
+      checkbox.select('input').on('change', function () {
+        const isChecked = this.checked;
+        const seriesPath = seriesG.select(`.series[data-key="${t}"]`);
+        const hoverArea = hoverG.select(`.hover-area[data-key="${t}"]`);
+
+        if (isChecked) {
+          seriesPath.classed('active', true).style('opacity', 1);
+          hoverArea.style('display', 'block');
+        } else {
+          seriesPath.classed('active', false).style('opacity', 0);
+          hoverArea.style('display', 'none');
+        }
+      });
+
+      // Color indicator
+      lg.append('rect').attr('x', 20).attr('y', 0).attr('width', 12).attr('height', 12).attr('rx', 2)
+        .attr('fill', color(t));
+
+      // Label
+      lg.append('text').attr('x', 36).attr('y', 10)
+        .style('font-size', '12px')
+        .style('fill', '#e2e8f0')
+        .text(t);
     });
 
     // Brush (Mini chart)
@@ -407,6 +457,13 @@
       }
       g.select('.axis').call(d3.axisBottom(x).ticks(10).tickFormat(d3.format('d')));
       paths.select('path').attr('d', d => line(d.values));
+      // Update hover circles positions
+      series.forEach(s => {
+        hoverG.select(`.hover-area[data-key="${s.key}"]`).selectAll('circle')
+          .data(s.values)
+          .attr('cx', d => x(d.year))
+          .attr('cy', d => y(d.count));
+      });
     }
   }
 
