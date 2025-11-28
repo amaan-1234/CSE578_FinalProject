@@ -1,0 +1,1165 @@
+<!doctype html>
+
+
+
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8" />
+
+<title>D3 v7 — Space Debris Visualizations</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+<style>
+
+  :root {
+
+    --fg: #1e293b;      /* dark slate text */
+
+    --muted: #64748b;   /* muted slate */
+
+    --accent: #dc2626;  /* vibrant red for dots */
+
+    --bg: #f8fafc;      /* light gray background */
+
+    --panel: #ffffff;   /* white panel bg */
+
+    --grid: #e2e8f0;    /* light gridline */
+
+    --blue: #3b82f6;
+
+    --green: #10b981;
+
+    --orange: #f59e0b;
+
+    --purple: #8b5cf6;
+
+    --border: #e2e8f0;  /* light border */
+
+    --shadow: rgba(0,0,0,0.08);  /* subtle shadow */
+
+  }
+
+  html, body {
+
+    margin: 0; padding: 0; background: var(--bg); color: var(--fg);
+
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+
+    line-height: 1.6;
+
+  }
+
+  header {
+
+    padding: 20px 24px; border-bottom: 1px solid var(--border); background: #ffffff;
+
+    box-shadow: 0 1px 3px var(--shadow);
+
+  }
+
+  header h1 { margin: 0 0 8px; font-size: 20px; font-weight: 700; color: var(--fg); }
+
+  header .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+  header label { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+  header input[type="file"] { color: var(--fg); font-size: 12px; cursor: pointer; }
+
+  main { padding: 24px; display: grid; gap: 32px; max-width: 1400px; margin: 0 auto; }
+
+  section {
+
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px;
+
+    box-shadow: 0 4px 6px -1px var(--shadow), 0 2px 4px -1px rgba(0,0,0,0.06);
+
+    transition: box-shadow 0.2s ease;
+
+  }
+
+  section:hover {
+
+    box-shadow: 0 10px 15px -3px var(--shadow), 0 4px 6px -2px rgba(0,0,0,0.05);
+
+  }
+
+  h2 { margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--fg); }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 12px 0 20px; }
+
+  .controls input[type="range"] { width: 160px; cursor: pointer; }
+
+  .controls select { cursor: pointer; }
+
+  .pill {
+
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px;
+
+    padding: 8px 14px; border-radius: 20px; background: #f1f5f9; border: 1px solid var(--border);
+
+    color: var(--fg); font-weight: 500; transition: all 0.2s ease;
+
+  }
+
+  .pill:hover { background: #e2e8f0; border-color: #cbd5e1; }
+
+  .pill input[type="range"], .pill select, .pill input[type="file"] {
+
+    background: white; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px;
+
+    color: var(--fg); font-size: 12px;
+
+  }
+
+  .pill strong { color: var(--fg); font-weight: 600; }
+
+  .tip {
+
+    position: absolute; pointer-events: none; background: rgba(255,255,255,0.98);
+
+    color: var(--fg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.1); display: none; white-space: nowrap;
+
+    z-index: 1000;
+
+  }
+
+  .axis text { fill: var(--muted); font-size: 12px; font-weight: 500; }
+
+  .axis path, .axis line { stroke: var(--grid); stroke-width: 1; }
+
+  .grid line { stroke: var(--grid); stroke-width: 1; opacity: 0.6; }
+
+  .ratio-dot { fill: var(--accent); transition: all 0.2s ease; cursor: pointer; }
+
+  .ratio-label { fill: var(--fg); font-weight: 600; font-size: 12px; }
+
+  .row-line { stroke: #cbd5e1; stroke-width: 1.5; opacity: 0.5; }
+
+  .highlight .ratio-dot { stroke: var(--accent); stroke-width: 3; }
+
+  .legend { font-size: 12px; user-select: none; }
+
+  .legend rect { stroke: var(--border); fill: #ffffff; }
+
+  .legend-item { cursor: pointer; transition: all 0.2s ease; }
+
+  .legend-item:hover { opacity: 0.8; }
+
+  .legend-item text { fill: var(--fg); font-weight: 500; font-size: 12px; transition: opacity 0.2s ease; }
+
+  .legend-indicator { transition: all 0.2s ease; }
+
+  .legend-item.active .legend-indicator { opacity: 1; }
+
+  .legend-item.inactive .legend-indicator { opacity: 0.3; }
+
+  .legend-item.inactive text { opacity: 0.5; }
+
+  .series-hidden { opacity: 0; display: none; }
+
+  .brush .selection { fill: rgba(59,130,246,0.2); stroke: var(--blue); stroke-width: 2; }
+
+  a { color: var(--blue); text-decoration: none; }
+
+  a:hover { text-decoration: underline; }
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+  <h1>Space Objects & Debris — Interactive D3 v7 Visualizations</h1>
+
+  <div class="row">
+
+    <label class="pill">Satellites & Debris CSV:
+
+      <input type="file" id="satCsv" accept=".csv" />
+
+    </label>
+
+    <span class="pill">Status: <strong id="status">waiting for CSV…</strong></span>
+
+  </div>
+
+</header>
+
+<main>
+
+  <section id="ratioSec">
+
+    <h2>Debris-to-Payload Ratio by Country (Top-N, Cleveland Dot Plot)</h2>
+
+    <div class="controls">
+
+      <label class="pill">Top-N:
+
+        <input type="range" id="topNSlider" min="5" max="25" step="1" value="15" />
+
+        <span id="topNVal">15</span>
+
+      </label>
+
+      <label class="pill">Min total objs (payload+debris):
+
+        <input type="range" id="minTotSlider" min="0" max="100" step="5" value="0" />
+
+        <span id="minTotVal">0</span>
+
+      </label>
+
+      <label class="pill">Sort:
+
+        <select id="sortBy">
+
+          <option value="ratio">ratio desc</option>
+
+          <option value="payload">payload desc</option>
+
+          <option value="debris">debris desc</option>
+
+          <option value="alpha">country A→Z</option>
+
+        </select>
+
+      </label>
+
+    </div>
+
+    <svg id="ratioSvg" width="100%" height="560"></svg>
+
+    <div style="font-size:12px;color:var(--muted);margin-top:12px;font-style:italic;">
+
+      Tip: hover to see exact counts; click a dot to pin highlight. Countries with zero payloads are excluded to avoid infinite ratios.
+
+    </div>
+
+  </section>
+
+  <section id="timeSec">
+
+    <h2>Objects in Orbit Over Time (by Type) - Cumulative</h2>
+
+    <div class="controls">
+
+      <span class="pill">Drag in lower mini-chart to zoom; click legend to toggle series.</span>
+
+    </div>
+
+    <svg id="timeSvg" width="100%" height="420"></svg>
+
+    <svg id="brushSvg" width="100%" height="120"></svg>
+
+  </section>
+
+</main>
+
+<div id="tooltip" class="tip"></div>
+
+<script>
+
+(function() {
+
+  const statusEl = document.getElementById('status');
+
+  const tip = d3.select('#tooltip');
+
+  // --- Helpers --------------------------------------------------------------
+
+  function normalizeType(s) {
+
+    if (!s) return '';
+
+    s = String(s).toUpperCase().trim().replace(/_/g, ' ').replace(/\s+/g, ' ');
+
+    if (s === 'RB' || s === 'ROCKETBODY' || s === 'ROCKET  BODY') return 'ROCKET BODY';
+
+    if (s.includes('ROCKET') && s.includes('BODY')) return 'ROCKET BODY';
+
+    if (s.includes('PAYLOAD')) return 'PAYLOAD';
+
+    if (s.includes('DEBRIS')) return 'DEBRIS';
+
+    return s;
+
+  }
+
+  function parseAnyDate(x) {
+
+    if (!x) return null;
+
+    // Common formats: 2005-06-12, 2012/03/01, 3/1/2012, etc.
+
+    const d = new Date(x);
+
+    if (!isNaN(d)) return d;
+
+    // try YYYY-MM-DD fallback
+
+    const m = String(x).match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+
+    if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+
+    return null;
+
+  }
+
+  function yearFrom(x) {
+
+    const d = parseAnyDate(x);
+
+    return d ? d.getFullYear() : null;
+
+  }
+
+  function fmt(n) { return d3.format(',')(n); }
+
+  const round2 = d3.format('.2f');
+
+  // --- File inputs ----------------------------------------------------------
+
+  let satRows = null;
+
+  document.getElementById('satCsv').addEventListener('change', async (e) => {
+
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const text = await file.text();
+
+    satRows = d3.csvParse(text);
+
+    statusEl.textContent = 'Satellites CSV loaded (' + fmt(satRows.length) + ' rows)';
+
+    if (satRows) { buildAll(); }
+
+  });
+
+  // --- Build both charts ----------------------------------------------------
+
+  function buildAll() {
+
+    buildRatioChart(satRows);
+
+    buildTimeChart(satRows);
+
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Chart 1 — Cleveland Dot Plot: Debris-to-Payload ratio by COUNTRY_CODE
+
+  // --------------------------------------------------------------------------
+
+  function buildRatioChart(rows) {
+
+    const svg = d3.select('#ratioSvg');
+
+    svg.selectAll('*').remove();
+
+    const W = svg.node().clientWidth || 980;
+
+    const H = +svg.attr('height');
+
+    const margin = { top: 30, right: 80, bottom: 40, left: 90 };
+
+    const innerW = W - margin.left - margin.right;
+
+    const innerH = H - margin.top - margin.bottom;
+
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Compute payload & debris counts per country code
+
+    const byCountry = d3.rollups(
+
+      rows,
+
+      v => {
+
+        const payload = d3.sum(v, d => normalizeType(d.OBJECT_TYPE) === 'PAYLOAD' ? 1 : 0);
+
+        const debris  = d3.sum(v, d => normalizeType(d.OBJECT_TYPE) === 'DEBRIS'  ? 1 : 0);
+
+        const total = payload + debris;
+
+        const ratio = payload > 0 ? (debris / payload) : NaN;
+
+        return { payload, debris, total, ratio };
+
+      },
+
+      d => (d.COUNTRY_CODE || '').toString().trim()
+
+    )
+
+    .filter(([cc, m]) => cc && isFinite(m.ratio) && m.payload > 0);
+
+    // Controls
+
+    const topNEl = document.getElementById('topNSlider');
+
+    const topNVal = document.getElementById('topNVal');
+
+    const minTotEl = document.getElementById('minTotSlider');
+
+    const minTotVal = document.getElementById('minTotVal');
+
+    const sortSel = document.getElementById('sortBy');
+
+    function deriveData() {
+
+      const minTot = +minTotEl.value;
+
+      const sortBy = sortSel.value;
+
+      let data = byCountry
+
+        .map(([cc, m]) => ({ code: cc, ...m }))
+
+        .filter(d => d.total >= minTot);
+
+      if (sortBy === 'ratio') data.sort((a,b) => d3.descending(a.ratio, b.ratio));
+
+      else if (sortBy === 'payload') data.sort((a,b) => d3.descending(a.payload, b.payload));
+
+      else if (sortBy === 'debris') data.sort((a,b) => d3.descending(a.debris, b.debris));
+
+      else if (sortBy === 'alpha') data.sort((a,b) => d3.ascending(a.code, b.code));
+
+      data = data.slice(0, +topNEl.value);
+
+      return data;
+
+    }
+
+    function render() {
+
+      const data = deriveData();
+
+      const xMax = d3.max(data, d => d.ratio) || 1;
+
+      const x = d3.scaleLinear().domain([0, xMax * 1.05]).range([0, innerW]);
+
+      const y = d3.scaleBand().domain(data.map(d => d.code)).range([0, innerH]).padding(0.5);
+
+      // Axes
+
+      g.selectAll('.axis').remove();
+
+      g.append('g').attr('class','axis').attr('transform', `translate(0,${innerH})`)
+
+        .call(d3.axisBottom(x).ticks(8).tickSizeOuter(0));
+
+      g.append('g').attr('class','axis').call(d3.axisLeft(y).tickSizeOuter(0));
+
+      // Row guide lines
+
+      const lines = g.selectAll('.row-line').data(data, d => d.code);
+
+      lines.join(
+
+        enter => enter.append('line')
+
+          .attr('class','row-line')
+
+          .attr('x1',0).attr('x2',0)
+
+          .attr('y1', d => y(d.code)).attr('y2', d => y(d.code))
+
+          .transition().duration(450).attr('x2', d => x(d.ratio)),
+
+        update => update.transition().duration(450)
+
+          .attr('y1', d => y(d.code)).attr('y2', d => y(d.code))
+
+          .attr('x2', d => x(d.ratio)),
+
+        exit => exit.transition().duration(250).attr('x2', 0).remove()
+
+      );
+
+      // Dots
+
+      const dots = g.selectAll('.ratio-dot').data(data, d => d.code);
+
+      dots.join(
+
+        enter => enter.append('circle')
+
+          .attr('class','ratio-dot')
+
+          .attr('r', 6.5)
+
+          .attr('cx', 0)
+
+          .attr('cy', d => y(d.code))
+
+          .style('cursor','pointer')
+
+          .on('mouseenter', (ev,d) => {
+
+            d3.select(ev.currentTarget).attr('r', 8);
+
+            showTip(ev, d);
+
+          })
+
+          .on('mousemove', (ev,d) => moveTip(ev))
+
+          .on('mouseleave', (ev) => {
+
+            d3.select(ev.currentTarget).attr('r', 6.5);
+
+            hideTip();
+
+          })
+
+          .on('click', (ev,d) => {
+
+            // toggle pin highlight
+
+            const sel = d3.select(ev.currentTarget.parentNode).selectAll('.ratio-dot');
+
+            sel.classed('highlight', false);
+
+            d3.select(ev.currentTarget).classed('highlight', !d3.select(ev.currentTarget).classed('highlight'));
+
+          })
+
+          .transition().duration(450)
+
+          .attr('cx', d => x(d.ratio)),
+
+        update => update.transition().duration(450)
+
+          .attr('cy', d => y(d.code))
+
+          .attr('cx', d => x(d.ratio)),
+
+        exit => exit.transition().duration(250).attr('cx', 0).remove()
+
+      );
+
+      // Labels at the end of the dot (ratio)
+
+      const labels = g.selectAll('.ratio-label').data(data, d => d.code);
+
+      labels.join(
+
+        enter => enter.append('text')
+
+          .attr('class','ratio-label')
+
+          .attr('x', d => x(d.ratio) + 8)
+
+          .attr('y', d => y(d.code) + 4)
+
+          .text(d => round2(d.ratio)),
+
+        update => update.transition().duration(450)
+
+          .attr('x', d => x(d.ratio) + 8)
+
+          .attr('y', d => y(d.code) + 4)
+
+          .text(d => round2(d.ratio)),
+
+        exit => exit.remove()
+
+      );
+
+
+      // Title & subtitle (as in the example)
+
+      svg.selectAll('.headings').remove();
+
+      const heads = svg.append('g').attr('class','headings')
+
+        .attr('transform', `translate(${margin.left},${16})`);
+
+      heads.append('text').attr('x', innerW/2).attr('text-anchor','middle')
+
+        .attr('font-size', 18).attr('font-weight', 700).style('fill', 'var(--fg)')
+
+        .text('Debris-to-Payload Ratio by Country (Top ' + data.length + ')');
+
+      heads.append('text').attr('x', innerW/2).attr('y', 20).attr('text-anchor','middle')
+
+        .style('fill', 'var(--muted)').attr('font-size', 13)
+
+        .text('Higher ratios indicate more debris per operational payload');
+
+      function showTip(ev, d) {
+
+        tip.style('display','block')
+
+          .html(
+
+            `<strong>${d.code}</strong><br/>
+
+             Debris: ${fmt(d.debris)}<br/>
+
+             Payload: ${fmt(d.payload)}<br/>
+
+             Ratio: <strong>${round2(d.ratio)}</strong>`
+
+          );
+
+        moveTip(ev);
+
+      }
+
+      function moveTip(ev) {
+
+        tip.style('left', (ev.pageX + 12) + 'px')
+
+           .style('top',  (ev.pageY + 12) + 'px');
+
+      }
+
+      function hideTip() { tip.style('display','none'); }
+
+    }
+
+    // Bind control events
+
+    topNEl.addEventListener('input', () => { topNVal.textContent = topNEl.value; render(); });
+
+    minTotEl.addEventListener('input', () => { minTotVal.textContent = minTotEl.value; render(); });
+
+    sortSel.addEventListener('change', render);
+
+    // Initial
+
+    topNVal.textContent = topNEl.value;
+
+    minTotVal.textContent = minTotEl.value;
+
+    render();
+
+  }
+
+  // --------------------------------------------------------------------------
+
+  // Chart 2 — Time Series by Type (PAYLOAD / DEBRIS / ROCKET BODY)
+
+  // with hover, legend toggle, and brush-zoom
+
+  // --------------------------------------------------------------------------
+
+  function buildTimeChart(rows) {
+
+    const svg = d3.select('#timeSvg');
+
+    const brushSvg = d3.select('#brushSvg');
+
+    svg.selectAll('*').remove();
+
+    brushSvg.selectAll('*').remove();
+
+    const W = svg.node().clientWidth || 980;
+
+    const H = +svg.attr('height');
+
+    const margin = { top: 50, right: 20, bottom: 30, left: 56 };
+
+    const innerW = W - margin.left - margin.right;
+
+    const innerH = H - margin.top - margin.bottom;
+
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Normalize & group by year × type (three main series)
+
+    const cleaned = rows.map(r => ({
+
+      year: yearFrom(r.LAUNCH_DATE),
+
+      type: normalizeType(r.OBJECT_TYPE)
+
+    })).filter(d => d.year && ['PAYLOAD','DEBRIS','ROCKET BODY'].includes(d.type));
+
+    const countsByYearType = d3.rollups(
+
+      cleaned,
+
+      v => v.length,
+
+      d => d.year,
+
+      d => d.type
+
+    );
+
+    const years = Array.from(new Set(cleaned.map(d => d.year))).sort((a,b)=>a-b);
+
+    const types = ['PAYLOAD','DEBRIS','ROCKET BODY'];
+
+    // Build series arrays with cumulative values [{type, values:[{year,count},...]}, ...]
+
+    const series = types.map(t => {
+
+      let cumulative = 0;
+
+      return {
+
+        key: t,
+
+        values: years.map(y => {
+
+          const yearCount = (countsByYearType.find(([yy])=>yy===y)?.[1].find(([tt])=>tt===t)?.[1]) || 0;
+
+          cumulative += yearCount;
+
+          return {
+
+            year: y,
+
+            count: cumulative
+
+          };
+
+        })
+
+      };
+
+    });
+
+    const x = d3.scaleLinear().domain(d3.extent(years)).range([0, innerW]);
+
+    const y = d3.scaleLinear()
+
+      .domain([0, d3.max(series, s => d3.max(s.values, d => d.count)) * 1.1 || 10])
+
+      .nice()
+
+      .range([innerH, 0]);
+
+    const color = d3.scaleOrdinal()
+
+      .domain(types)
+
+      .range([ 'var(--blue)', 'var(--orange)', 'var(--green)' ]);
+
+    // Axes
+
+    g.append('g').attr('class','axis')
+
+      .attr('transform', `translate(0,${innerH})`)
+
+      .call(d3.axisBottom(x).ticks(10).tickFormat(d3.format('d')));
+
+    g.append('g').attr('class','axis').call(d3.axisLeft(y).ticks(6));
+
+    // Grid
+
+    g.append('g').attr('class','grid')
+
+      .call(d3.axisLeft(y).tickSize(-innerW).tickFormat(''))
+
+      .selectAll('line').attr('stroke-opacity', 0.3);
+
+    // Lines
+
+    const line = d3.line()
+
+      .x(d => x(d.year))
+
+      .y(d => y(d.count))
+
+      .curve(d3.curveMonotoneX);
+
+    const seriesG = g.append('g');
+
+    const paths = seriesG.selectAll('.series').data(series, d => d.key).join(enter => {
+
+      const sg = enter.append('g').attr('class','series').attr('data-key', d => d.key);
+
+      sg.append('path')
+
+        .attr('fill','none')
+
+        .attr('stroke', d => color(d.key))
+
+        .attr('stroke-width', 2.5)
+
+        .attr('d', d => line(d.values));
+
+      return sg;
+
+    });
+
+    // Hover tracker
+
+    const hover = g.append('g').style('display','none');
+
+    hover.append('line').attr('class','hover-x')
+
+      .attr('y1',0).attr('y2',innerH)
+
+      .attr('stroke','#64748b').attr('stroke-dasharray','3,3').attr('stroke-width', 1.5);
+
+    const hoverDots = hover.selectAll('.hdot').data(types).join('circle')
+
+      .attr('class','hdot')
+
+      .attr('r',4).attr('stroke','#ffffff').attr('stroke-width', 2).attr('fill', d => color(d));
+
+    const hoverBox = g.append('foreignObject').style('display','none')
+
+      .attr('width', 200).attr('height', 120);
+
+    const hbDiv = hoverBox.append('xhtml:div')
+
+      .style('background','rgba(255,255,255,0.98)')
+
+      .style('border','1px solid var(--border)')
+
+      .style('border-radius','8px').style('padding','10px')
+
+      .style('font-size','12px').style('color','var(--fg)')
+
+      .style('box-shadow','0 10px 25px rgba(0,0,0,0.15)');
+
+    svg.on('mousemove', (ev) => {
+
+      const [mx,my] = d3.pointer(ev, g.node());
+
+      if (mx < 0 || mx > innerW || my < 0 || my > innerH) { hover.style('display','none'); hoverBox.style('display','none'); return; }
+
+      hover.style('display', null);
+
+      hoverBox.style('display', null);
+
+      const yr = Math.round(x.invert(mx));
+
+      const payload = series[0].values.find(v => v.year===yr)?.count || 0;
+
+      const debris  = series[1].values.find(v => v.year===yr)?.count || 0;
+
+      const rocket  = series[2].values.find(v => v.year===yr)?.count || 0;
+
+      hover.select('.hover-x').attr('transform', `translate(${x(yr)},0)`);
+
+      const pts = [payload, debris, rocket];
+
+      // Check which series are visible and only show dots for visible ones
+
+      const isPayloadHidden = seriesG.selectAll('.series').nodes().some(node => {
+
+        const d = d3.select(node).datum();
+
+        return d && d.key === 'PAYLOAD' && d3.select(node).classed('series-hidden');
+
+      });
+
+      const isDebrisHidden = seriesG.selectAll('.series').nodes().some(node => {
+
+        const d = d3.select(node).datum();
+
+        return d && d.key === 'DEBRIS' && d3.select(node).classed('series-hidden');
+
+      });
+
+      const isRocketHidden = seriesG.selectAll('.series').nodes().some(node => {
+
+        const d = d3.select(node).datum();
+
+        return d && d.key === 'ROCKET BODY' && d3.select(node).classed('series-hidden');
+
+      });
+
+      hoverDots.attr('cx', x(yr))
+
+        .attr('cy', (d,i)=> y(pts[i]))
+
+        .style('opacity', (d,i) => {
+
+          if (i === 0) return isPayloadHidden ? 0 : 1;
+
+          if (i === 1) return isDebrisHidden ? 0 : 1;
+
+          if (i === 2) return isRocketHidden ? 0 : 1;
+
+          return 1;
+
+        });
+
+      hbDiv.html(
+
+        `<div style="font-weight:700;color:var(--fg);margin-bottom:4px">${yr}</div>
+
+         <div style="margin-top:4px;color:var(--muted)">Payload (cumulative): <b style="color:var(--fg)">${fmt(payload)}</b></div>
+
+         <div style="color:var(--muted)">Debris (cumulative): <b style="color:var(--fg)">${fmt(debris)}</b></div>
+
+         <div style="color:var(--muted)">Rocket Body (cumulative): <b style="color:var(--fg)">${fmt(rocket)}</b></div>`
+
+      );
+
+      // Calculate tooltip position to avoid blocking markers
+
+      const tooltipWidth = 200;
+
+      const tooltipHeight = 120;
+
+      const xPos = x(yr);
+
+      const markerYPositions = pts.map((pt, i) => {
+
+        if (i === 0 && isPayloadHidden) return null;
+
+        if (i === 1 && isDebrisHidden) return null;
+
+        if (i === 2 && isRocketHidden) return null;
+
+        return y(pt);
+
+      }).filter(y => y !== null);
+
+      // Find the highest (lowest y value) visible marker
+
+      const highestMarkerY = markerYPositions.length > 0 ? Math.min(...markerYPositions) : innerH / 2;
+
+      // Position tooltip to avoid blocking markers
+
+      let tooltipX = xPos + 12;
+
+      let tooltipY = 10;
+
+      // If tooltip would overlap with markers, position it above or to the side
+
+      if (highestMarkerY < tooltipHeight + 20) {
+
+        // Markers are high up, position tooltip below or to the side
+
+        if (xPos > innerW / 2) {
+
+          // Mouse is on right side, position tooltip to the left
+
+          tooltipX = xPos - tooltipWidth - 12;
+
+        } else {
+
+          // Mouse is on left side, position tooltip to the right
+
+          tooltipX = xPos + 12;
+
+        }
+
+        // Position vertically to avoid markers
+
+        tooltipY = Math.max(highestMarkerY + 30, 10);
+
+        if (tooltipY + tooltipHeight > innerH) {
+
+          tooltipY = innerH - tooltipHeight - 10;
+
+        }
+
+      } else {
+
+        // Markers are lower, position tooltip above them
+
+        tooltipY = Math.max(highestMarkerY - tooltipHeight - 10, 10);
+
+        if (xPos + tooltipWidth > innerW) {
+
+          tooltipX = innerW - tooltipWidth - 10;
+
+        }
+
+      }
+
+      hoverBox.attr('x', Math.max(0, Math.min(tooltipX, innerW - tooltipWidth)))
+
+        .attr('y', Math.max(0, Math.min(tooltipY, innerH - tooltipHeight)));
+
+    });
+
+    svg.on('mouseleave', ()=> { hover.style('display','none'); hoverBox.style('display','none'); });
+
+    // Legend (toggle) - positioned above graph
+
+    const legendWidth = 400;
+
+    const legendX = margin.left + (innerW - legendWidth) / 2;
+
+    const legend = svg.append('g').attr('class','legend')
+
+      .attr('transform', `translate(${legendX},${8})`);
+
+    legend.append('rect').attr('width', legendWidth).attr('height', 32).attr('rx',8).attr('ry',8);
+
+    const items = legend.selectAll('.legend-item').data(types).join('g')
+
+      .attr('class','legend-item active')
+
+      .attr('transform', (d,i)=>`translate(${20 + i * 130},${16})`)
+
+      .on('click', function(ev, key) {
+
+        ev.stopPropagation();
+
+        const target = paths.filter(d => d.key===key);
+
+        const item = d3.select(this);
+
+        const isHidden = target.classed('series-hidden');
+
+        // Toggle state
+
+        if (isHidden) {
+
+          // Show series
+
+          target.classed('series-hidden', false);
+
+          target.select('path').transition().duration(200).style('opacity', 1).style('display', null);
+
+          item.classed('active', true).classed('inactive', false);
+
+          item.select('.legend-indicator').transition().duration(200).style('opacity', 1);
+
+          item.select('text').transition().duration(200).style('opacity', 1);
+
+        } else {
+
+          // Hide series
+
+          target.classed('series-hidden', true);
+
+          target.select('path').transition().duration(200).style('opacity', 0).style('display', 'none');
+
+          item.classed('active', false).classed('inactive', true);
+
+          item.select('.legend-indicator').transition().duration(200).style('opacity', 0.3);
+
+          item.select('text').transition().duration(200).style('opacity', 0.5);
+
+        }
+
+      });
+
+    // Add color indicator (simple square)
+
+    items.append('rect').attr('class','legend-indicator')
+
+      .attr('x', 0).attr('y', -6)
+
+      .attr('width', 14).attr('height', 14)
+
+      .attr('rx', 3).attr('ry', 3)
+
+      .attr('fill', d => color(d))
+
+      .style('opacity', 1);
+
+    // Add text label
+
+    items.append('text')
+
+      .attr('x', 20).attr('y', 5)
+
+      .attr('fill', 'var(--fg)').style('fill', 'var(--fg)')
+
+      .text(d => d);
+
+    // Brush (mini chart)
+
+    const Bsvg = brushSvg;
+
+    const Bh = +brushSvg.attr('height');
+
+    const Bmargin = { top: 8, right: 20, bottom: 22, left: 56 };
+
+    const Biw = W - Bmargin.left - Bmargin.right;
+
+    const Bih = Bh - Bmargin.top - Bmargin.bottom;
+
+    const Bg = Bsvg.append('g').attr('transform', `translate(${Bmargin.left},${Bmargin.top})`);
+
+    const Bx = d3.scaleLinear().domain(x.domain()).range([0, Biw]);
+
+    const By = d3.scaleLinear()
+
+      .domain([0, d3.max(series, s => d3.max(s.values, d => d.count)) || 10]).range([Bih, 0]);
+
+    const Bline = d3.line().x(d => Bx(d.year)).y(d => By(d.count)).curve(d3.curveMonotoneX);
+
+    Bg.append('g').attr('class','axis').attr('transform', `translate(0,${Bih})`)
+
+      .call(d3.axisBottom(Bx).ticks(10).tickFormat(d3.format('d')));
+
+    Bg.append('g').attr('class','axis').call(d3.axisLeft(By).ticks(3));
+
+    Bg.selectAll('.mini').data(series).join('path')
+
+      .attr('class','mini').attr('fill','none').attr('stroke-width',1.5)
+
+      .attr('stroke', d => color(d.key)).attr('d', d => Bline(d.values));
+
+    const brush = d3.brushX()
+
+      .extent([[0,0],[Biw,Bih]])
+
+      .on('brush end', ({selection}) => {
+
+        if (!selection) return;
+
+        const [x0,x1] = selection.map(Bx.invert);
+
+        x.domain([Math.round(x0), Math.round(x1)]);
+
+        // redraw paths & axes
+
+        g.selectAll('.series path').attr('d', d => line(d.values));
+
+        g.selectAll('.axis').filter((d,i,n)=> n[i].__axis==='x' ? true : false);
+
+        g.selectAll('.axis').remove();
+
+        g.append('g').attr('class','axis')
+
+          .attr('transform', `translate(0,${innerH})`)
+
+          .call(d3.axisBottom(x).ticks(10).tickFormat(d3.format('d')));
+
+        g.append('g').attr('class','axis').call(d3.axisLeft(y).ticks(6));
+
+        g.select('.grid').remove();
+
+        g.append('g').attr('class','grid')
+
+          .call(d3.axisLeft(y).tickSize(-innerW).tickFormat(''))
+
+          .selectAll('line').attr('stroke-opacity', 0.3);
+
+      });
+
+    Bg.append('g').attr('class','brush').call(brush)
+
+      .call(brush.move, [Bx(d3.min(years) || 2000), Bx(d3.max(years) || 2025)]);
+
+  }
+
+})();
+
+</script>
+
+</body>
+
+</html>
+
