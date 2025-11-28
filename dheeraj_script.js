@@ -1,27 +1,30 @@
 (function () {
-  const canvas = document.getElementById("stars");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.getElementById("stars-dheeraj");
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
 
-  function drawStars() {
-    const { innerWidth: w, innerHeight: h } = window;
-    canvas.width = w;
-    canvas.height = h;
-    ctx.clearRect(0, 0, w, h);
+    function drawStars() {
+      const { innerWidth: w, innerHeight: h } = window;
+      canvas.width = w;
+      canvas.height = h;
+      ctx.clearRect(0, 0, w, h);
 
-    for (let i = 0; i < 80; i++) {
-      ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.9})`;
-      ctx.beginPath();
-      ctx.arc(
-        Math.random() * w,
-        Math.random() * h,
-        Math.random() * 1.2,
-        0, 2 * Math.PI
-      );
-      ctx.fill();
+      for (let i = 0; i < 80; i++) {
+        ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.9})`;
+        ctx.beginPath();
+        ctx.arc(
+          Math.random() * w,
+          Math.random() * h,
+          Math.random() * 1.2,
+          0, 2 * Math.PI
+        );
+        ctx.fill();
+      }
     }
-  }
 
-  drawStars();
+    drawStars();
+    window.addEventListener("resize", drawStars);
+  }
 
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', e => {
@@ -37,10 +40,17 @@
 
   window.addEventListener("DOMContentLoaded", () => {
 
-    const svg = d3.select("#viz1");
-    const width = +svg.attr("width");
-    const height = +svg.attr("height");
-    const tooltip = d3.select(".tooltip");
+    const svg = d3.select("#viz-petals");
+    if (svg.empty()) return;
+
+    const width = +svg.attr("width") || 1000;
+    const height = +svg.attr("height") || 600;
+
+    // Unique tooltip
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .attr("id", "tooltip-dheeraj")
+      .style("opacity", 0);
 
     const rootG = svg.append("g");
     const projection = d3.geoNaturalEarth1()
@@ -59,8 +69,8 @@
       .startAngle(d => d.startA)
       .endAngle(d => d.endA);
 
-
-
+    // Internal state for visualization updates
+    let updateVizCallback = null;
 
     Promise.all([
       d3.json("countries-110m.json"),
@@ -196,19 +206,19 @@
 
       updatePetals();
 
-      window.updateVisualizationForStep = function (step) {
+      updateVizCallback = function (step) {
         const actions = [
           () => rootG.selectAll(".petal").classed("petal-pulse", true),
           () => rootG.selectAll(".petal").classed("petal-pulse", false),
-          () => {},
-          () => {},
+          () => { },
+          () => { },
           () => rootG.selectAll(".petal").classed("petal-pulse", false)
         ];
         if (actions[step]) actions[step]();
       };
 
 
-    });
+    }).catch(err => console.error("Error loading petal data:", err));
 
     let currentStep = -1;
     const steps = document.querySelectorAll('.step');
@@ -217,11 +227,14 @@
       if (stepIndex === currentStep) return;
       currentStep = stepIndex;
       steps.forEach((s, i) => s.classList.toggle('active', i === stepIndex));
-      if (window.updateVisualizationForStep) window.updateVisualizationForStep(stepIndex);
+      if (updateVizCallback) updateVizCallback(stepIndex);
     }
 
     function handleScroll() {
-      const rect = document.getElementById('missions').getBoundingClientRect();
+      const missionsEl = document.getElementById('missions');
+      if (!missionsEl) return;
+
+      const rect = missionsEl.getBoundingClientRect();
       const winH = window.innerHeight;
       if (rect.top > winH || rect.bottom < 0) { updateStep(-1); return; }
 
@@ -297,6 +310,9 @@
 
 
   async function drawOrbitHeatmap() {
+    const container = d3.select("#viz-orbit");
+    if (container.empty()) return;
+
     const data = await loadOrbitData();
 
     const counts = {
@@ -305,11 +321,10 @@
       GEO: data.filter(d => d.band === "GEO").length
     };
 
-    const container = d3.select("#orbitViz");
     container.selectAll("*").remove();
 
-    const w = container.node().clientWidth;
-    const h = container.node().clientHeight;
+    const w = container.node().clientWidth || 800;
+    const h = container.node().clientHeight || 600;
     const radius = Math.min(w, h) / 2 - 50;
 
     const tooltip = container.append("div").attr("class", "orbit-tooltip");
@@ -347,8 +362,8 @@
       .attr("d", d => arc({ innerRadius: d.r0, outerRadius: d.r1 }))
       .attr("fill", d =>
         d.name === "LEO" ? "rgba(255,0,0,0.07)" :
-        d.name === "MEO" ? "rgba(0,150,255,0.05)" :
-        "rgba(100,255,100,0.03)"
+          d.name === "MEO" ? "rgba(0,150,255,0.05)" :
+            "rgba(100,255,100,0.03)"
       )
       .attr("stroke", "#334");
 
@@ -365,7 +380,7 @@
         return rScale(d.alt) * Math.sin(θ);
       })
       .attr("fill", d => COLORS[d.band])
-      .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === "MEO" ? 0.9 : 0.8)
+      .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8)
       .on("mouseover", (event, d) => {
         const [mx, my] = d3.pointer(event, container.node());
         tooltip
@@ -409,11 +424,11 @@
         'GEO': { scale: 1.3, highlight: 'GEO' },
         'future': { scale: 1, highlight: null }
       };
-      
+
       const { scale, highlight: highlightBand } = zoneConfig[zone] || { scale: 1, highlight: null };
-      
+
       g.transition().duration(800).attr('transform', `${baseTransform} scale(${scale})`);
-      
+
       g.selectAll('circle.orbit-object')
         .transition().duration(600)
         .attr('fill-opacity', d => {
@@ -430,11 +445,11 @@
     function updateDebrisStep(stepIndex) {
       if (stepIndex === currentDebrisStep) return;
       currentDebrisStep = stepIndex;
-      
+
       debrisSteps.forEach((step, i) => {
         step.classList.toggle('active', i === stepIndex);
       });
-      
+
       if (stepIndex >= 0 && stepIndex < debrisSteps.length) {
         const zone = debrisSteps[stepIndex].dataset.zone;
         updateDebrisVisualization(zone);
@@ -443,15 +458,17 @@
 
     function handleDebrisScroll() {
       const debrisSection = document.getElementById('debris');
+      if (!debrisSection) return;
+
       const rect = debrisSection.getBoundingClientRect();
       const windowHeight = window.innerHeight;
-      
+
       if (rect.top > windowHeight || rect.bottom < 0) {
         updateDebrisStep(-1);
         return;
       }
-      
-      const headerHeight = document.querySelector('.viz2-header').offsetHeight;
+
+      const headerHeight = document.querySelector('.viz2-header') ? document.querySelector('.viz2-header').offsetHeight : 0;
       const scrollInSection = Math.max(0, windowHeight - rect.top - headerHeight);
       const sectionHeight = debrisSteps.length * windowHeight;
       const scrollProgress = scrollInSection / sectionHeight;
@@ -466,7 +483,9 @@
   setTimeout(drawOrbitHeatmap, 100);
 
   window.addEventListener("resize", () => {
-    drawStars();
+    // drawStars(); // drawStars is not accessible here unless we move it out or expose it. 
+    // But we attached resize listener for drawStars inside the if(canvas) block.
+    // So we just need to re-draw orbit heatmap.
     drawOrbitHeatmap();
   });
 
