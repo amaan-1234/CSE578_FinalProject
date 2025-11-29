@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROS: Benefits of Space Exploration</title>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <script src="https://unpkg.com/intersection-observer@0.12.0/intersection-observer.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <canvas id="stars-dheeraj"></canvas>
+    <div id="tooltip" class="tooltip" style="display:none;"></div>
+
+    <header>
+        <h1>PROS: The Benefits of Space Exploration</h1>
+        <p>Technological advancement, scientific discovery, and economic growth.</p>
+        <a href="index.html"
+            style="color: var(--accent-color); text-decoration: none; font-size: 0.9rem; margin-top: 1rem; display: inline-block;">&larr;
+            Back to Home</a>
+    </header>
+
+    <div class="container">
+
+        <!-- Abbhijit: NEOs - Bar Chart -->
+        <div class="viz-card scroll-section" data-step="0">
+            <div class="viz-title">Near-Earth Objects: Hazard Classification</div>
+            <div id="barChart"></div>
+        </div>
+
+        <!-- Abbhijit: NEOs - Scatter Plot -->
+        <div class="viz-card scroll-section" data-step="1">
+            <div class="viz-title">Near-Earth Objects: Size vs Distance Analysis</div>
+            <div id="scatterPlot"></div>
+        </div>
+
+        <!-- Sakshi: Streamgraph -->
+        <div class="viz-card scroll-section" data-step="2">
+            <div class="viz-title">The Rise of Commercial Spaceflight</div>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Year Range:</label>
+                    <span id="yearRange-stream"></span>
+                </div>
+                <div class="control-group">
+                    <label>Start:</label>
+                    <input type="range" id="rangeStart-stream">
+                    <span id="rangeStartLabel-stream"></span>
+                </div>
+                <div class="control-group">
+                    <label>End:</label>
+                    <input type="range" id="rangeEnd-stream">
+                    <span id="rangeEndLabel-stream"></span>
+                </div>
+                <button id="resetPeriodBtn-stream"
+                    style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Reset</button>
+            </div>
+            <div style="display:flex; gap:2rem; margin-bottom:1rem; font-size:0.9rem;">
+                <div>Total: <strong id="totalLaunches-stream">0</strong></div>
+                <div style="color:#4CAF50">State: <strong id="stateLaunches-stream">0</strong></div>
+                <div style="color:#FF6B35">Private: <strong id="privateLaunches-stream">0</strong></div>
+            </div>
+            <div id="viz-stream"></div>
+            <div id="tooltip-stream" class="tooltip" style="display:none;"></div>
+        </div>
+
+        <!-- Sakshi: Waffle -->
+        <div class="viz-card scroll-section" data-step="3">
+            <div class="viz-title">Missions by Decade</div>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Select Decade:</label>
+                    <select id="yearSelect-waffle">
+                        <option value="all">All Decades</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Missions:</label>
+                    <strong id="currentCount-waffle">0</strong>
+                </div>
+            </div>
+            <div id="viz-waffle"></div>
+            <div id="legend-waffle" style="margin-top:1rem; display:flex; gap:2rem;"></div>
+            <div id="tooltip-waffle" class="tooltip" style="display:none;"></div>
+        </div>
+
+        <!-- Sanyam: Chord Diagram -->
+        <div class="viz-card scroll-section" data-step="4">
+            <div class="viz-title">Space Ecosystem Collaboration Network</div>
+            <div id="vis-container-1"></div>
+        </div>
+
+        <!-- Sanyam: Shield Diagram -->
+        <div class="viz-card scroll-section" data-step="5">
+            <div class="viz-title">Mission Success Shield Analysis</div>
+            <div id="vis-container-2"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="Abbhijit_script.js?v=5"></script>
+    <script src="sakshi_streamgraph.js"></script>
+    <script src="sakshi_waffle.js"></script>
+    <script src="sanyam_script.js"></script>
+    <script src="scrollama.js"></script>
+
+</body>
+
+</html>

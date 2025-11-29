@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONS: Costs and Risks of Space Exploration</title>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <script src="https://unpkg.com/intersection-observer@0.12.0/intersection-observer.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <canvas id="stars-dheeraj"></canvas>
+    <div id="tooltip" class="tooltip" style="display:none;"></div>
+
+    <header>
+        <h1>CONS: The Costs and Risks</h1>
+        <p>Space debris, environmental impact, and mission failures.</p>
+        <a href="index.html"
+            style="color: var(--accent-color); text-decoration: none; font-size: 0.9rem; margin-top: 1rem; display: inline-block;">&larr;
+            Back to Home</a>
+    </header>
+
+    <div class="container">
+
+        <!-- Isha: Diverging Chart -->
+        <div class="viz-card scroll-section" data-step="6">
+            <div class="viz-title">Mission Success vs. Failure by Country</div>
+            <div id="viz1-section" class="viz-section">
+                <div id="diverging-chart"></div>
+            </div>
+        </div>
+
+        <!-- Isha: Slope Chart -->
+        <div class="viz-card scroll-section" data-step="7">
+            <div class="viz-title">Success Rate Trends Over Time</div>
+            <div id="viz2-section" class="viz-section">
+                <div id="slope-chart"></div>
+            </div>
+        </div>
+
+        <!-- Dheeraj: Petals Chart -->
+        <div class="viz-card scroll-section" data-step="8">
+            <div class="viz-title">Environmental Cost by Country</div>
+            <div id="missions" style="position:relative;">
+                <svg id="viz-petals" width="1000" height="600"></svg>
+                <div class="steps-container" style="display:none;">
+                    <div class="step"></div>
+                    <div class="step"></div>
+                    <div class="step"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dheeraj: Orbital Debris Heatmap -->
+        <div class="viz-card scroll-section" data-step="9">
+            <div class="viz-title">Orbital Debris Heatmap</div>
+            <div id="debris" style="position:relative;">
+                <div id="viz-orbit" style="width:100%; height:600px;"></div>
+                <div class="debris-steps" style="display:none;">
+                    <div class="debris-step" data-zone="overview"></div>
+                    <div class="debris-step" data-zone="LEO"></div>
+                    <div class="debris-step" data-zone="MEO"></div>
+                    <div class="debris-step" data-zone="GEO"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Original: Debris-to-Payload Ratio -->
+        <div class="viz-card scroll-section" data-step="10">
+            <div class="viz-title">Debris-to-Payload Ratio by Country</div>
+            <section id="ratioSec">
+                <div class="controls">
+                    <label class="pill">Top-N:
+                        <input type="range" id="topNSlider" min="5" max="25" step="1" value="15" />
+                        <span id="topNVal">15</span>
+                    </label>
+                    <label class="pill">Min total objs:
+                        <input type="range" id="minTotSlider" min="0" max="100" step="5" value="0" />
+                        <span id="minTotVal">0</span>
+                    </label>
+                    <label class="pill">Sort:
+                        <select id="sortBy">
+                            <option value="ratio">ratio desc</option>
+                            <option value="payload">payload desc</option>
+                            <option value="debris">debris desc</option>
+                            <option value="alpha">country A→Z</option>
+                        </select>
+                    </label>
+                </div>
+                <svg id="ratioSvg" width="100%" height="560"></svg>
+            </section>
+        </div>
+
+        <!-- Original: Objects in Orbit Over Time -->
+        <div class="viz-card scroll-section" data-step="11">
+            <div class="viz-title">Objects in Orbit Over Time</div>
+            <section id="timeSec">
+                <svg id="timeSvg" width="100%" height="420"></svg>
+                <svg id="brushSvg" width="100%" height="120"></svg>
+            </section>
+            <div id="status" style="font-size:0.8rem; color:#64748b; margin-top:1rem;"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="Isha_script_con.js"></script>
+    <script src="dheeraj_script.js"></script>
+    <script src="original_script.js?v=4"></script>
+    <script src="scrollama.js"></script>
+
+</body>
+
+</html>

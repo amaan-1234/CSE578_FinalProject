@@ -384,3 +384,547 @@ html {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* Landing Page Split Styles */
+.split-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #333;
+    overflow: hidden;
+}
+
+.split {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 1000ms ease-in-out;
+}
+
+.split-left {
+    left: 0;
+    background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center center no-repeat;
+    background-size: cover;
+}
+
+.split-left::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(87, 84, 236, 0.7);
+}
+
+.split-right {
+    right: 0;
+    background: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2072&auto=format&fit=crop') center center no-repeat;
+    background-size: cover;
+}
+
+.split-right::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(43, 43, 43, 0.8);
+}
+
+.split-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    text-align: center;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.split h1 {
+    font-size: 4rem;
+    color: #fff;
+    text-transform: uppercase;
+    background: none;
+    -webkit-text-fill-color: #fff;
+    margin-bottom: 1rem;
+}
+
+.btn-split {
+    display: inline-block;
+    padding: 1.5rem 3rem;
+    color: #fff;
+    border: 3px solid #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-split:hover {
+    background-color: #fff;
+    color: #333;
+}
+
+/* Hover Effects */
+.split-left:hover {
+    width: 75%;
+}
+
+.split-right:hover {
+    width: 75%;
+}
+
+.split-right:hover+.split-left {
+    width: 25%;
+}
+
+.split-left:hover+.split-right {
+    width: 25%;
+}
+
+/* Ensure sibling selector works by structure in HTML */
+.container-landing:hover .split-left {
+    width: 25%;
+}
+
+.container-landing:hover .split-left:hover {
+    width: 75%;
+}
+
+.slope-point {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slope-point:hover {
+    r: 9;
+    filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
+}
+
+.country-label {
+    font-size: 14px;
+    fill: #ccc;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.country-label:hover {
+    fill: #38bdf8;
+    font-size: 16px;
+}
+
+.value-label {
+    font-size: 12px;
+    fill: #aaa;
+    font-weight: 600;
+}
+
+.grid line {
+    stroke: #334155;
+    stroke-dasharray: 4, 4;
+    stroke-width: 1px;
+}
+
+.center-line {
+    stroke: #94a3b8;
+    stroke-width: 2.5px;
+}
+
+/* Original Index Styles */
+.ratio-dot {
+    fill: #ef4444;
+}
+
+.row-line {
+    stroke: #475569;
+}
+
+.axis text {
+    fill: #94a3b8;
+}
+
+.axis path,
+.axis line {
+    stroke: #334155;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+.scroll-section {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.scroll-section.is-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scroll-section.is-above {
+    opacity: 0.3;
+    transform: translateY(-20px);
+}
+
+.section-header {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.section-header.is-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Landing Page Split Styles */
+.split-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #333;
+    overflow: hidden;
+}
+
+.split {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 1000ms ease-in-out;
+}
+
+.split-left {
+    left: 0;
+    background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center center no-repeat;
+    background-size: cover;
+}
+
+.split-left::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(87, 84, 236, 0.7);
+}
+
+.split-right {
+    right: 0;
+    background: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2072&auto=format&fit=crop') center center no-repeat;
+    background-size: cover;
+}
+
+.split-right::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(43, 43, 43, 0.8);
+}
+
+.split-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    text-align: center;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.split h1 {
+    font-size: 4rem;
+    color: #fff;
+    text-transform: uppercase;
+    background: none;
+    -webkit-text-fill-color: #fff;
+    margin-bottom: 1rem;
+}
+
+.btn-split {
+    display: inline-block;
+    padding: 1.5rem 3rem;
+    color: #fff;
+    border: 3px solid #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-split:hover {
+    background-color: #fff;
+    color: #333;
+}
+
+/* Hover Effects */
+.split-left:hover {
+    width: 75%;
+}
+
+.split-right:hover {
+    width: 75%;
+}
+
+.split-right:hover+.split-left {
+    width: 25%;
+}
+
+.split-left:hover+.split-right {
+    width: 25%;
+}
+
+/* Ensure sibling selector works by structure in HTML */
+.container-landing:hover .split-left {
+    width: 25%;
+}
+
+.container-landing:hover .split-left:hover {
+    width: 75%;
+}
+
+.slope-point {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slope-point:hover {
+    r: 9;
+    filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
+}
+
+.country-label {
+    font-size: 14px;
+    fill: #ccc;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.country-label:hover {
+    fill: #38bdf8;
+    font-size: 16px;
+}
+
+.value-label {
+    font-size: 12px;
+    fill: #aaa;
+    font-weight: 600;
+}
+
+.grid line {
+    stroke: #334155;
+    stroke-dasharray: 4, 4;
+    stroke-width: 1px;
+}
+
+.center-line {
+    stroke: #94a3b8;
+    stroke-width: 2.5px;
+}
+
+/* Original Index Styles */
+.ratio-dot {
+    fill: #ef4444;
+}
+
+.row-line {
+    stroke: #475569;
+}
+
+.axis text {
+    fill: #94a3b8;
+}
+
+.axis path,
+.axis line {
+    stroke: #334155;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+.scroll-section {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.scroll-section.is-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scroll-section.is-above {
+    opacity: 0.3;
+    transform: translateY(-20px);
+}
+
+.section-header {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.section-header.is-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Landing Page Split Styles */
+.split-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #333;
+    overflow: hidden;
+}
+
+.split {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 1000ms ease-in-out;
+}
+
+.split-left {
+    left: 0;
+    background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center center no-repeat;
+    background-size: cover;
+}
+
+.split-left::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(87, 84, 236, 0.7);
+}
+
+.split-right {
+    right: 0;
+    background: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2072&auto=format&fit=crop') center center no-repeat;
+    background-size: cover;
+}
+
+.split-right::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(43, 43, 43, 0.8);
+}
+
+.split-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    text-align: center;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.split h1 {
+    font-size: 4rem;
+    color: #fff;
+    text-transform: uppercase;
+    background: none;
+    -webkit-text-fill-color: #fff;
+    margin-bottom: 1rem;
+}
+
+.btn-split {
+    display: inline-block;
+    padding: 1.5rem 3rem;
+    color: #fff;
+    border: 3px solid #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-split:hover {
+    background-color: #fff;
+    color: #333;
+}
+
+/* Hover Effects */
+.split-left:hover {
+    width: 75%;
+}
+
+.split-right:hover {
+    width: 75%;
+}
+
+.split-right:hover+.split-left {
+    width: 25%;
+}
+
+.split-left:hover+.split-right {
+    width: 25%;
+}
+
+/* Ensure sibling selector works by structure in HTML */
+.container-landing:hover .split-left {
+    width: 25%;
+}
+
+.container-landing:hover .split-left:hover {
+    width: 75%;
+}
+
+.container-landing:hover .split-right {
+    width: 25%;
+}
+
+.container-landing:hover .split-right:hover {
+    width: 75%;
+}
+
+.landing-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1.5rem 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+    text-align: center;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.landing-title h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin: 0;
+    background: linear-gradient(to right, #38bdf8, #c084fc, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.split-content p {
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    max-width: 400px;
+    margin: 0 auto 2rem auto;
+    line-height: 1.6;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    font-weight: 500;
+}

@@ -82,17 +82,26 @@
     };
 
     var chartSettings = {
-      title: "NEO Approaches (Cumulative, 2000-2025)",
+      font: { color: "#ffffff" },
+      title: {
+        text: "NEO Approaches (Cumulative, 2000-2025)",
+        font: { color: "#ffffff" }
+      },
       xaxis: {
-        title: "Year",
+        title: { text: "Year", font: { color: "#ffffff" } },
+        tickfont: { color: "#ffffff" },
         gridcolor: "#e2e6f5"
       },
       yaxis: {
-        title: "Cumulative Count",
+        title: { text: "Cumulative Count", font: { color: "#ffffff" } },
+        tickfont: { color: "#ffffff" },
         gridcolor: "#e2e6f5"
       },
-      plot_bgcolor: "#ffffff",
-      paper_bgcolor: "#ffffff",
+      legend: {
+        font: { color: "#ffffff" }
+      },
+      plot_bgcolor: "rgba(0,0,0,0)",
+      paper_bgcolor: "rgba(0,0,0,0)",
       hoverlabel: {
         font: {
           size: 16,
@@ -142,11 +151,24 @@
     };
 
     var layout = {
-      title: "Closest 20 Near-Earth Approaches",
-      xaxis: { title: "H (Magnitude) — Smaller = Larger Object" },
-      yaxis: { title: "Miss Distance (Lunar Distance)" },
-      plot_bgcolor: "#ffffff",
-      paper_bgcolor: "#ffffff",
+      font: { color: "#ffffff" },
+      title: {
+        text: "Closest 20 Near-Earth Approaches",
+        font: { color: "#ffffff" }
+      },
+      xaxis: {
+        title: { text: "H (Magnitude) — Smaller = Larger Object", font: { color: "#ffffff" } },
+        tickfont: { color: "#ffffff" }
+      },
+      yaxis: {
+        title: { text: "Miss Distance (Lunar Distance)", font: { color: "#ffffff" } },
+        tickfont: { color: "#ffffff" }
+      },
+      legend: {
+        font: { color: "#ffffff" }
+      },
+      plot_bgcolor: "rgba(0,0,0,0)",
+      paper_bgcolor: "rgba(0,0,0,0)",
       hoverlabel: {
         font: { size: 16, color: "#333" },
         bgcolor: "#f2f2f2",
