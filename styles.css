@@ -358,22 +358,6 @@ html {
     scroll-behavior: smooth;
 }
 
-.scroll-section {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-
-.scroll-section.is-active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.scroll-section.is-above {
-    opacity: 0.3;
-    transform: translateY(-20px);
-}
-
 .section-header {
     opacity: 0;
     transform: translateY(30px);
@@ -554,22 +538,6 @@ html {
     scroll-behavior: smooth;
 }
 
-.scroll-section {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-
-.scroll-section.is-active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.scroll-section.is-above {
-    opacity: 0.3;
-    transform: translateY(-20px);
-}
-
 .section-header {
     opacity: 0;
     transform: translateY(30px);
@@ -748,22 +716,6 @@ html {
 
 html {
     scroll-behavior: smooth;
-}
-
-.scroll-section {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-
-.scroll-section.is-active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.scroll-section.is-above {
-    opacity: 0.3;
-    transform: translateY(-20px);
 }
 
 .section-header {
@@ -927,4 +879,289 @@ html {
     line-height: 1.6;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     font-weight: 500;
+}
+
+/* Scrollytelling Styles */
+.scrolly-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 300vh;
+    margin: 4rem 0;
+}
+
+.scrolly-viz {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 55%;
+    height: 100vh;
+    background: transparent;
+    z-index: 1;
+}
+
+.scrolly-story {
+    width: 45%;
+    padding: 2rem;
+    position: relative;
+}
+
+.story-step {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+    opacity: 0.25;
+    transition: all 0.6s ease;
+    transform: scale(0.95);
+}
+
+.story-step.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.story-step.active .story-content {
+    border-color: var(--accent-color);
+    box-shadow: 0 12px 24px rgba(56, 189, 248, 0.2), 0 0 40px rgba(56, 189, 248, 0.1);
+}
+
+.story-content {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 2.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.story-content h2 {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.story-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #e2e8f0;
+    margin-bottom: 1rem;
+}
+
+.stat-highlight {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1));
+    border-left: 4px solid var(--accent-color);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    display: block;
+    font-size: 1rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.warning-text {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #ef4444;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    color: #fca5a5;
+    font-weight: 600;
+    margin-top: 1.5rem;
+}
+
+/* Single Description Scrollytelling Layout */
+.scrolly-container-single {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    margin: 4rem 0;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.scrolly-container-single.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scrolly-container-single .scrolly-viz {
+    width: 60%;
+    padding: 2rem;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scrolly-container-single .scrolly-story {
+    width: 40%;
+    padding: 3rem 2rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Visualization containers */
+.scrolly-container-single #viz1-section,
+.scrolly-container-single #viz2-section {
+    width: 100%;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scrolly-container-single #diverging-chart,
+.scrolly-container-single #slope-chart {
+    width: 100%;
+    max-width: 100%;
+    height: 500px;
+}
+
+.scrolly-container-single #missions {
+    width: 100%;
+    max-width: 100%;
+    height: 600px;
+    margin: 0 auto;
+}
+
+.scrolly-container-single #viz-petals {
+    width: 100%;
+    max-width: 100%;
+    height: 600px;
+}
+
+.scrolly-container-single #ratioSec {
+    width: 100%;
+    max-width: 100%;
+}
+
+.scrolly-container-single #timeSec {
+    width: 100%;
+    max-width: 100%;
+}
+
+.scrolly-container-single svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Ensure text in all SVGs is white */
+.scrolly-container-single svg text,
+.scrolly-container svg text,
+svg text {
+    fill: #e2e8f0 !important;
+}
+
+.scrolly-container-single .axis text,
+.scrolly-container .axis text {
+    fill: #94a3b8 !important;
+}
+
+.scrolly-container-single .country-label,
+.scrolly-container-single .band-label,
+.scrolly-container-single .value-label {
+    fill: #e2e8f0 !important;
+}
+
+.single-desc {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.single-desc .story-content {
+    transform: translateX(0);
+    transition: all 0.6s ease;
+}
+
+.scrolly-container-single:not(.in-view) .story-content {
+    transform: translateX(20px);
+    opacity: 0.5;
+}
+
+/* Additional text color overrides for specific elements */
+.country-label,
+.band-label,
+.value-label,
+.axis text,
+.slope-line text,
+text.value-label {
+    fill: #e2e8f0 !important;
+}
+
+/* Ensure controls remain readable */
+.controls,
+.controls label,
+.controls input,
+.controls select {
+    color: #e2e8f0;
+}
+
+/* Fix any remaining dark text */
+#ratioSec text,
+#timeSec text,
+#viz-petals text {
+    fill: #e2e8f0 !important;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .scrolly-container {
+        flex-direction: column;
+    }
+
+    .scrolly-viz {
+        position: relative;
+        width: 100%;
+        height: 60vh;
+        border-right: none;
+        border-bottom: none;
+    }
+
+    .scrolly-story {
+        width: 100%;
+    }
+
+    .scrolly-container-single {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .scrolly-container-single .scrolly-viz {
+        width: 100%;
+        border-right: none;
+        border-bottom: none;
+    }
+
+    .scrolly-container-single .scrolly-story {
+        width: 100%;
+        padding: 2rem;
+    }
+
+    .scrolly-container-single #diverging-chart,
+    .scrolly-container-single #slope-chart,
+    .scrolly-container-single #missions,
+    .scrolly-container-single #ratioSec,
+    .scrolly-container-single #timeSec {
+        max-width: 100%;
+    }
 }

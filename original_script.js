@@ -1,5 +1,4 @@
 (function () {
-  const statusEl = document.getElementById('status');
   const tip = d3.select('#tooltip');
 
   // --- Helpers --------------------------------------------------------------
@@ -43,11 +42,9 @@
   // Load default dataset
   d3.csv("space_decay.csv").then(data => {
     satRows = data;
-    if (statusEl) statusEl.textContent = 'Default CSV loaded (' + fmt(satRows.length) + ' rows)';
     buildAll();
   }).catch(err => {
     console.error("Error loading space_decay.csv:", err);
-    if (statusEl) statusEl.textContent = 'Error loading default CSV';
   });
 
   // Optional: File input listener if user wants to override
@@ -58,7 +55,6 @@
       if (!file) return;
       const text = await file.text();
       satRows = d3.csvParse(text);
-      if (statusEl) statusEl.textContent = 'Custom CSV loaded (' + fmt(satRows.length) + ' rows)';
       if (satRows) { buildAll(); }
     });
   }
@@ -86,8 +82,11 @@
     if (svg.empty()) return;
 
     svg.selectAll('*').remove();
-    const W = svg.node().clientWidth || 980;
+    const container = svg.node().parentElement;
+    const containerWidth = container.getBoundingClientRect().width || container.clientWidth || 900;
+    const W = containerWidth;
     const H = +svg.attr('height') || 560;
+    svg.attr('width', W);
     const margin = { top: 30, right: 80, bottom: 40, left: 90 };
     const innerW = W - margin.left - margin.right;
     const innerH = H - margin.top - margin.bottom;
@@ -258,8 +257,12 @@
     svg.selectAll('*').remove();
     brushSvg.selectAll('*').remove();
 
-    const W = svg.node().clientWidth || 980;
+    const container = svg.node().parentElement;
+    const containerWidth = container.getBoundingClientRect().width || container.clientWidth || 900;
+    const W = containerWidth;
     const H = +svg.attr('height') || 420;
+    svg.attr('width', W);
+    brushSvg.attr('width', W);
     const margin = { top: 50, right: 20, bottom: 30, left: 56 };
     const innerW = W - margin.left - margin.right;
     const innerH = H - margin.top - margin.bottom;

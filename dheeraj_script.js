@@ -43,8 +43,14 @@
     const svg = d3.select("#viz-petals");
     if (svg.empty()) return;
 
-    const width = +svg.attr("width") || 1000;
-    const height = +svg.attr("height") || 600;
+    const container = svg.node().parentElement;
+    const containerWidth = container.getBoundingClientRect().width || 900;
+    const containerHeight = container.getBoundingClientRect().height || 600;
+    const width = containerWidth;
+    const height = containerHeight;
+
+    // Update SVG dimensions
+    svg.attr("width", width).attr("height", height);
 
     // Unique tooltip
     const tooltip = d3.select("body").append("div")
@@ -284,13 +290,22 @@
         let raan = getNumeric(d, ["RA_OF_ASC_NODE", "RAAN"]);
         if (!Number.isFinite(raan)) raan = Math.random() * 360;
 
+        // Parse launch date
+        const launchDate = d.LAUNCH_DATE || "";
+        let year = null;
+        if (launchDate) {
+          const match = launchDate.match(/(\d{4})/);
+          if (match) year = parseInt(match[1]);
+        }
+
         return {
           alt,
           band: classifyOrbit(alt),
           raan,
           name: d.OBJECT_NAME || "",
           type: d.OBJECT_TYPE || "",
-          country: d.COUNTRY_CODE || ""
+          country: d.COUNTRY_CODE || "",
+          year: year
         };
       });
     } catch {
@@ -302,7 +317,8 @@
           raan: Math.random() * 360,
           name: `Debris-${i}`,
           type: "Debris",
-          country: "Unknown"
+          country: "Unknown",
+          year: 2000 + Math.floor(Math.random() * 26)
         };
       });
     }
@@ -313,13 +329,8 @@
     const container = d3.select("#viz-orbit");
     if (container.empty()) return;
 
-    const data = await loadOrbitData();
-
-    const counts = {
-      LEO: data.filter(d => d.band === "LEO").length,
-      MEO: data.filter(d => d.band === "MEO").length,
-      GEO: data.filter(d => d.band === "GEO").length
-    };
+    const allData = await loadOrbitData();
+    let currentPeriod = "intro";
 
     container.selectAll("*").remove();
 
@@ -331,7 +342,7 @@
     const svg = container.append("svg").attr("width", w).attr("height", h);
     const g = svg.append("g").attr("transform", `translate(${w / 2},${h / 2})`);
 
-    const maxAlt = d3.max(data, d => d.alt) || 40000;
+    const maxAlt = d3.max(allData, d => d.alt) || 40000;
     const rScale = d3.scalePow().exponent(0.6).domain([0, maxAlt]).range([0, radius]);
     const angleScale = d3.scaleLinear().domain([0, 360]).range([0, 2 * Math.PI]);
 
@@ -349,10 +360,11 @@
       .style("font-weight", "bold")
       .text("EARTH");
 
+    // Create orbital bands
     const bands = [
-      { name: "LEO", r0: 0, r1: rScale(LEO_MAX), val: counts.LEO },
-      { name: "MEO", r0: rScale(LEO_MAX), r1: rScale(MEO_MAX), val: counts.MEO },
-      { name: "GEO", r0: rScale(MEO_MAX), r1: rScale(maxAlt), val: counts.GEO }
+      { name: "LEO", r0: 0, r1: rScale(LEO_MAX) },
+      { name: "MEO", r0: rScale(LEO_MAX), r1: rScale(MEO_MAX) },
+      { name: "GEO", r0: rScale(MEO_MAX), r1: rScale(maxAlt) }
     ];
 
     const arc = d3.arc().startAngle(0).endAngle(2 * Math.PI);
@@ -367,126 +379,271 @@
       )
       .attr("stroke", "#334");
 
-    g.selectAll("circle.orbit-object")
-      .data(data)
-      .join("circle")
-      .attr("r", 0)
-      .attr("cx", d => {
-        const θ = angleScale(d.raan) - Math.PI / 2;
-        return rScale(d.alt) * Math.cos(θ);
-      })
-      .attr("cy", d => {
-        const θ = angleScale(d.raan) - Math.PI / 2;
-        return rScale(d.alt) * Math.sin(θ);
-      })
-      .attr("fill", d => COLORS[d.band])
-      .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8)
-      .on("mouseover", (event, d) => {
-        const [mx, my] = d3.pointer(event, container.node());
-        tooltip
-          .style("left", (mx + 10) + "px")
-          .style("top", (my - 10) + "px")
-          .style("opacity", 1)
-          .html(`<b>⚠️ DEBRIS THREAT</b><br/><strong>Object:</strong> ${d.name || "Untracked Fragment"}<br/><strong>Origin:</strong> ${d.country || "Unknown Mission"}<br/><strong>Risk Zone:</strong> ${d.band}<br/><strong>Speed:</strong> ~17,500 mph<br/><strong>Altitude:</strong> ${Math.round(d.alt).toLocaleString()} km`);
-      })
-      .on("mouseout", () => tooltip.style("opacity", 0))
-      .transition()
-      .delay((d, i) => i * 1.5)
-      .duration(1200)
-      .attr("r", d => d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8);
+    // Band labels container
+    const labelGroup = g.append("g").attr("class", "band-labels");
 
-    const labelData = [
-      { name: "LEO", r: (bands[0].r0 + bands[0].r1) / 2, count: counts.LEO, pos: "top" },
-      { name: "MEO", r: (bands[1].r0 + bands[1].r1) / 2, count: counts.MEO, pos: "right" },
-      { name: "GEO", r: (bands[2].r0 + bands[2].r1) / 2, count: counts.GEO, pos: "bottom" }
-    ];
+    // Create debris circles
+    const debrisCircles = g.append("g").attr("class", "debris-circles");
 
-    g.selectAll("text.band-label")
-      .data(labelData)
-      .join("text")
-      .attr("x", d => d.pos === "right" ? d.r + 15 : d.pos === "left" ? -d.r - 15 : 0)
-      .attr("y", d => d.pos === "top" ? -d.r - 15 : d.pos === "bottom" ? d.r + 25 : 5)
-      .attr("text-anchor", d => d.pos === "right" ? "start" : d.pos === "left" ? "end" : "middle")
-      .attr("fill", d => COLORS[d.name])
-      .style("font-size", "14px")
-      .style("font-weight", "bold")
-      .text(d => `${d.name}: ${d.count.toLocaleString()}`);
+    function filterDataByPeriod(period) {
+      if (period === "intro" || period === "conclusion") {
+        return allData;
+      }
 
-    let currentDebrisStep = -1;
-    const debrisSteps = document.querySelectorAll('.debris-step');
-    let baseTransform = `translate(${w / 2},${h / 2})`;
-
-    function updateDebrisVisualization(zone) {
-      const zoneConfig = {
-        'overview': { scale: 1, highlight: null },
-        'LEO': { scale: 2.5, highlight: 'LEO' },
-        'MEO': { scale: 1.8, highlight: 'MEO' },
-        'GEO': { scale: 1.3, highlight: 'GEO' },
-        'future': { scale: 1, highlight: null }
+      const periodRanges = {
+        "2000-2008": [2000, 2008],
+        "2009-2016": [2009, 2016],
+        "2017-2025": [2017, 2025]
       };
 
-      const { scale, highlight: highlightBand } = zoneConfig[zone] || { scale: 1, highlight: null };
-
-      g.transition().duration(800).attr('transform', `${baseTransform} scale(${scale})`);
-
-      g.selectAll('circle.orbit-object')
-        .transition().duration(600)
-        .attr('fill-opacity', d => {
-          if (!highlightBand) return d.band === 'LEO' ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8;
-          return d.band === highlightBand ? 1.0 : 0.3;
-        })
-        .attr('r', d => {
-          const baseSize = d.band === 'LEO' ? 2.5 : d.band === 'MEO' ? 2.0 : 1.8;
-          if (!highlightBand) return baseSize;
-          return d.band === highlightBand ? baseSize * 1.2 : baseSize * 0.6;
-        });
+      const [start, end] = periodRanges[period] || [0, 3000];
+      return allData.filter(d => d.year && d.year >= start && d.year <= end);
     }
 
-    function updateDebrisStep(stepIndex) {
-      if (stepIndex === currentDebrisStep) return;
-      currentDebrisStep = stepIndex;
+    function updateVisualization(period, animate = true) {
+      const data = filterDataByPeriod(period);
 
-      debrisSteps.forEach((step, i) => {
-        step.classList.toggle('active', i === stepIndex);
-      });
+      const counts = {
+        LEO: data.filter(d => d.band === "LEO").length,
+        MEO: data.filter(d => d.band === "MEO").length,
+        GEO: data.filter(d => d.band === "GEO").length
+      };
 
-      if (stepIndex >= 0 && stepIndex < debrisSteps.length) {
-        const zone = debrisSteps[stepIndex].dataset.zone;
-        updateDebrisVisualization(zone);
+      // Zoom configuration based on period
+      const zoomConfig = {
+        "intro": { scale: 0.85, duration: 1000 },
+        "2000-2008": { scale: 1.4, duration: 1200 },
+        "2009-2016": { scale: 1.4, duration: 1200 },
+        "2017-2025": { scale: 1.4, duration: 1200 },
+        "conclusion": { scale: 0.85, duration: 1000 }
+      };
+
+      const zoom = zoomConfig[period] || { scale: 1, duration: 800 };
+
+      // Apply zoom transformation
+      if (animate) {
+        g.transition()
+          .duration(zoom.duration)
+          .attr("transform", `translate(${w / 2},${h / 2}) scale(${zoom.scale})`);
+      } else {
+        g.attr("transform", `translate(${w / 2},${h / 2}) scale(${zoom.scale})`);
+      }
+
+      // Update band labels
+      const labelData = [
+        { name: "LEO", r: (bands[0].r0 + bands[0].r1) / 2, count: counts.LEO, pos: "top" },
+        { name: "MEO", r: (bands[1].r0 + bands[1].r1) / 2, count: counts.MEO, pos: "right" },
+        { name: "GEO", r: (bands[2].r0 + bands[2].r1) / 2, count: counts.GEO, pos: "bottom" }
+      ];
+
+      labelGroup.selectAll("text.band-label")
+        .data(labelData)
+        .join("text")
+        .attr("class", "band-label")
+        .attr("x", d => d.pos === "right" ? d.r + 15 : d.pos === "left" ? -d.r - 15 : 0)
+        .attr("y", d => d.pos === "top" ? -d.r - 15 : d.pos === "bottom" ? d.r + 25 : 5)
+        .attr("text-anchor", d => d.pos === "right" ? "start" : d.pos === "left" ? "end" : "middle")
+        .attr("fill", d => COLORS[d.name])
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .transition()
+        .duration(animate ? 600 : 0)
+        .text(d => `${d.name}: ${d.count.toLocaleString()}`);
+
+      // Update debris circles with better enter/exit handling
+      const circles = debrisCircles.selectAll("circle.orbit-object")
+        .data(data, (d, i) => d.name + i);
+
+      // Exit old circles (debris removed from this period)
+      circles.exit()
+        .each(function() {
+          const circle = d3.select(this);
+          const d = circle.datum();
+          if (animate) {
+            // Pulse effect before removal
+            circle
+              .transition()
+              .duration(200)
+              .attr("r", (d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8) * 1.5)
+              .attr("fill-opacity", 0.3)
+              .transition()
+              .duration(400)
+              .attr("r", 0)
+              .attr("fill-opacity", 0)
+              .remove();
+          } else {
+            circle.remove();
+          }
+        });
+
+      // Update existing circles
+      circles
+        .transition()
+        .duration(animate ? 600 : 0)
+        .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8);
+
+      // Enter new circles (debris added in this period)
+      const entering = circles.enter()
+        .append("circle")
+        .attr("class", "orbit-object")
+        .attr("r", 0)
+        .attr("cx", d => {
+          const θ = angleScale(d.raan) - Math.PI / 2;
+          return rScale(d.alt) * Math.cos(θ);
+        })
+        .attr("cy", d => {
+          const θ = angleScale(d.raan) - Math.PI / 2;
+          return rScale(d.alt) * Math.sin(θ);
+        })
+        .attr("fill", d => COLORS[d.band])
+        .attr("fill-opacity", 0)
+        .on("mouseover", function(event, d) {
+          const [mx, my] = d3.pointer(event, container.node());
+          tooltip
+            .style("left", (mx + 10) + "px")
+            .style("top", (my - 10) + "px")
+            .style("opacity", 1)
+            .html(`<b>⚠️ DEBRIS THREAT</b><br/><strong>Object:</strong> ${d.name || "Untracked Fragment"}<br/><strong>Origin:</strong> ${d.country || "Unknown Mission"}<br/><strong>Year:</strong> ${d.year || "Unknown"}<br/><strong>Risk Zone:</strong> ${d.band}<br/><strong>Speed:</strong> ~17,500 mph<br/><strong>Altitude:</strong> ${Math.round(d.alt).toLocaleString()} km`);
+        })
+        .on("mouseout", () => tooltip.style("opacity", 0));
+
+      if (animate) {
+        // Stagger animation for new debris
+        entering
+          .transition()
+          .delay((_, i) => Math.min(i * 0.3, 800))
+          .duration(600)
+          .attr("r", d => d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8)
+          .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8)
+          .transition()
+          .duration(200)
+          .attr("r", d => (d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8) * 1.2)
+          .transition()
+          .duration(200)
+          .attr("r", d => d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8);
+      } else {
+        entering
+          .attr("r", d => d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8)
+          .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8);
       }
     }
 
-    function handleDebrisScroll() {
-      const debrisSection = document.getElementById('debris');
-      if (!debrisSection) return;
+    // Initial render
+    updateVisualization("intro", true);
 
-      const rect = debrisSection.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
+    // Scrollytelling logic
+    function setupScrollytelling() {
+      const storySteps = document.querySelectorAll('.story-step');
 
-      if (rect.top > windowHeight || rect.bottom < 0) {
-        updateDebrisStep(-1);
+      if (storySteps.length === 0) {
+        console.warn('No story steps found! Scrollytelling will not work.');
         return;
       }
 
-      const headerHeight = document.querySelector('.viz2-header') ? document.querySelector('.viz2-header').offsetHeight : 0;
-      const scrollInSection = Math.max(0, windowHeight - rect.top - headerHeight);
-      const sectionHeight = debrisSteps.length * windowHeight;
-      const scrollProgress = scrollInSection / sectionHeight;
-      const stepIndex = Math.floor(scrollProgress * debrisSteps.length);
-      updateDebrisStep(Math.min(stepIndex, debrisSteps.length - 1));
+      let currentStepIndex = -1;
+
+      function handleScrollytellingScroll() {
+        const windowHeight = window.innerHeight;
+        let activeIndex = -1;
+
+        storySteps.forEach((step, index) => {
+          const rect = step.getBoundingClientRect();
+          const stepMiddle = rect.top + rect.height / 2;
+          const isInRange = stepMiddle >= 0 && stepMiddle <= windowHeight * 0.6;
+
+          // A step is active if its middle is in the upper 60% of the viewport
+          if (isInRange) {
+            activeIndex = index;
+          }
+        });
+
+        // Update active state and visualization
+        if (activeIndex !== currentStepIndex) {
+          currentStepIndex = activeIndex;
+
+          // Update visual state of story steps
+          storySteps.forEach((step, i) => {
+            if (i === activeIndex) {
+              step.classList.add('active');
+            } else {
+              step.classList.remove('active');
+            }
+          });
+
+          // Update visualization
+          if (activeIndex >= 0 && activeIndex < storySteps.length) {
+            const newPeriod = storySteps[activeIndex].dataset.period;
+
+            if (newPeriod !== currentPeriod) {
+              currentPeriod = newPeriod;
+              updateVisualization(newPeriod, true);
+            }
+          }
+        }
+      }
+
+      // Add scroll listener
+      window.addEventListener('scroll', handleScrollytellingScroll, { passive: true });
+
+      // Initial check
+      setTimeout(handleScrollytellingScroll, 100);
+      setTimeout(handleScrollytellingScroll, 500);
     }
 
-    window.addEventListener('scroll', handleDebrisScroll);
-    handleDebrisScroll();
+    // Setup scrollytelling after a short delay to ensure DOM is ready
+    setTimeout(setupScrollytelling, 200);
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      drawOrbitHeatmap();
+    });
   }
 
-  setTimeout(drawOrbitHeatmap, 100);
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(drawOrbitHeatmap, 100);
+      setupSingleDescScrollEffects();
+    });
+  } else {
+    setTimeout(drawOrbitHeatmap, 100);
+    setupSingleDescScrollEffects();
+  }
 
-  window.addEventListener("resize", () => {
-    // drawStars(); // drawStars is not accessible here unless we move it out or expose it. 
-    // But we attached resize listener for drawStars inside the if(canvas) block.
-    // So we just need to re-draw orbit heatmap.
-    drawOrbitHeatmap();
-  });
+  // Scroll effects for single-description visualizations
+  function setupSingleDescScrollEffects() {
+    const singleContainers = document.querySelectorAll('.scrolly-container-single');
+
+    if (singleContainers.length === 0) {
+      console.log('No single-description containers found');
+      return;
+    }
+
+    console.log(`✅ Found ${singleContainers.length} single-description containers`);
+
+    function checkVisibility() {
+      const windowHeight = window.innerHeight;
+      const triggerPoint = windowHeight * 0.75;
+
+      singleContainers.forEach(container => {
+        const rect = container.getBoundingClientRect();
+        const containerTop = rect.top;
+        const containerBottom = rect.bottom;
+
+        // Container is in view if its top is above the trigger point and bottom is below viewport top
+        if (containerTop < triggerPoint && containerBottom > 0) {
+          container.classList.add('in-view');
+        } else {
+          container.classList.remove('in-view');
+        }
+      });
+    }
+
+    // Add scroll listener
+    window.addEventListener('scroll', checkVisibility, { passive: true });
+
+    // Initial check
+    setTimeout(checkVisibility, 100);
+  }
 
 })();

@@ -86,7 +86,8 @@
         if (container.empty()) return;
 
         const margin = { top: 80, right: 60, bottom: 100, left: 140 };
-        const width = Math.min(1200, container.node().offsetWidth || 1000) - margin.left - margin.right;
+        const containerWidth = container.node().getBoundingClientRect().width || container.node().offsetWidth || 800;
+        const width = containerWidth - margin.left - margin.right;
         const height = 600 - margin.top - margin.bottom;
 
         const svg = container.append('svg')
@@ -310,7 +311,8 @@
         if (container.empty()) return;
 
         const margin = { top: 80, right: 200, bottom: 80, left: 180 };
-        const width = Math.min(1100, container.node().offsetWidth || 1000) - margin.left - margin.right;
+        const containerWidth = container.node().getBoundingClientRect().width || container.node().offsetWidth || 800;
+        const width = containerWidth - margin.left - margin.right;
         const height = 800 - margin.top - margin.bottom;
 
         const svg = container.append('svg')
@@ -539,7 +541,7 @@
             .attr('text-anchor', 'start')
             .attr('dy', '0.35em')
             .attr('opacity', 0)
-            .attr('fill', '#888')
+            .attr('fill', '#e2e8f0')
             .text(d => `${d.period1.toFixed(1)}%`)
             .style('font-size', '12px');
 

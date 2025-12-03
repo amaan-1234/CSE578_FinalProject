@@ -6,15 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CONS: Costs and Risks of Space Exploration</title>
 
-    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
     <script src="https://unpkg.com/intersection-observer@0.12.0/intersection-observer.js"></script>
-    <script src="https://unpkg.com/scrollama"></script>
 
-    <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -33,92 +30,151 @@
 
     <div class="container">
 
-        <!-- Isha: Diverging Chart -->
-        <div class="viz-card scroll-section" data-step="6">
-            <div class="viz-title">Mission Success vs. Failure by Country</div>
-            <div id="viz1-section" class="viz-section">
-                <div id="diverging-chart"></div>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <div id="viz1-section" class="viz-section">
+                    <div id="diverging-chart"></div>
+                </div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Mission Success vs Failure by Country</h2>
+                        <p>The following diverging bar chart compares the number of successful (green, extending right) and failed (red, extending left) space missions throughout history across major space-faring countries. That would point to how nations differ in their reliability of mission outcomes and long-term program risk, hence underlining significant costs associated with mission failures on the world's stage.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Isha: Slope Chart -->
-        <div class="viz-card scroll-section" data-step="7">
-            <div class="viz-title">Success Rate Trends Over Time</div>
-            <div id="viz2-section" class="viz-section">
-                <div id="slope-chart"></div>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <div id="viz2-section" class="viz-section">
+                    <div id="slope-chart"></div>
+                </div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Mission Failure Rate Shift by Country</h2>
+                        <p>This slope chart compares mission failure rates for major space-faring nations across two periods 2000-2012 and 2013-2025. Green lines reflect those countries that reduced their failure rates over time, while the red lines represent the ones whose performance got worse. The visualization shows uneven progress in launch reliability, with continuing risks of mission failure.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Dheeraj: Petals Chart -->
-        <div class="viz-card scroll-section" data-step="8">
-            <div class="viz-title">Environmental Cost by Country</div>
-            <div id="missions" style="position:relative;">
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
                 <svg id="viz-petals" width="1000" height="600"></svg>
-                <div class="steps-container" style="display:none;">
-                    <div class="step"></div>
-                    <div class="step"></div>
-                    <div class="step"></div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Cumulative CO2 from Space Launches</h2>
+                        <p>This interactive visual displays the CO2 emissions from space launches worldwide, from the year 2000 to 2025. It displays: Annual emissions (green line) and Cumulative emissions (blue area). Users can also change emission assumptions by fuel type-RP-1, CH4, LH2, solid boosters-to show how launch vehicles are responsible for atmospheric CO2. By 2022, cumulative launch emissions approach 700,000 tons.</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Dheeraj: Orbital Debris Heatmap -->
-        <div class="viz-card scroll-section" data-step="9">
-            <div class="viz-title">Orbital Debris Heatmap</div>
-            <div id="debris" style="position:relative;">
-                <div id="viz-orbit" style="width:100%; height:600px;"></div>
-                <div class="debris-steps" style="display:none;">
-                    <div class="debris-step" data-zone="overview"></div>
-                    <div class="debris-step" data-zone="LEO"></div>
-                    <div class="debris-step" data-zone="MEO"></div>
-                    <div class="debris-step" data-zone="GEO"></div>
+        <div class="scrolly-container">
+            <div class="scrolly-viz">
+                <div id="viz-orbit" style="width:100%; height:100vh;"></div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step" data-period="intro">
+                    <div class="story-content">
+                        <h2>Space Launches per Month (2000-2025)</h2>
+                        <p>This heatmap presents global space launch activity over the span of 25 years. Each cell represents the number of launches within a particular month, and the darker shades mean greater launch counts. The transformation from light to deep red really points to how dramatically launch frequency has accelerated, especially in the last decade, as more nations and private companies venture into the space arena.</p>
+                        <p>For most of modern history, launching rockets into space were rare milestones-major events that commanded worldwide attention. Over the last decade, however, this pattern has dramatically shifted. Space isn't an exclusive frontier anymore; it's a congested highway of satellites, rockets, and rapid-fire launches. This heatmap helps us understand how rapidly that change happened.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="2000-2008">
+                    <div class="story-content">
+                        <h2>The Quiet Era (2000-2008)</h2>
+                        <p>During the early 2000s, launch activity was steady and relatively low. Fewer than 5 launches in most months kept Earth's orbit rather manageable and predictable.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="2009-2016">
+                    <div class="story-content">
+                        <h2>The Growth Phase (2009-2016)</h2>
+                        <p>Launch frequency began to rise around 2010. More countries developed launch capabilities, and commercial players entered the scene.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="2017-2025">
+                    <div class="story-content">
+                        <h2>The Surge (2017-2025)</h2>
+                        <p>The last decade transformed orbital activity. Commercial mega-constellations, reusable rockets, and higher demand for satellite connectivity have resulted in frequent and sometimes weekly launches.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="conclusion">
+                    <div class="story-content">
+                        <h2>The Consequence</h2>
+                        <p>The heatmap makes one thing clear: We are sending more rockets into space than ever before each year. Whereas oceans or land may recover, orbit doesn't. Every launch adds traffic. Every mission increases complexity. And every fragment created may remain for decades.</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Original: Debris-to-Payload Ratio -->
-        <div class="viz-card scroll-section" data-step="10">
-            <div class="viz-title">Debris-to-Payload Ratio by Country</div>
-            <section id="ratioSec">
-                <div class="controls">
-                    <label class="pill">Top-N:
-                        <input type="range" id="topNSlider" min="5" max="25" step="1" value="15" />
-                        <span id="topNVal">15</span>
-                    </label>
-                    <label class="pill">Min total objs:
-                        <input type="range" id="minTotSlider" min="0" max="100" step="5" value="0" />
-                        <span id="minTotVal">0</span>
-                    </label>
-                    <label class="pill">Sort:
-                        <select id="sortBy">
-                            <option value="ratio">ratio desc</option>
-                            <option value="payload">payload desc</option>
-                            <option value="debris">debris desc</option>
-                            <option value="alpha">country A→Z</option>
-                        </select>
-                    </label>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <section id="ratioSec">
+                    <div class="controls">
+                        <label class="pill">Top-N:
+                            <input type="range" id="topNSlider" min="5" max="25" step="1" value="15" />
+                            <span id="topNVal">15</span>
+                        </label>
+                        <label class="pill">Min total objs:
+                            <input type="range" id="minTotSlider" min="0" max="100" step="5" value="0" />
+                            <span id="minTotVal">0</span>
+                        </label>
+                        <label class="pill">Sort:
+                            <select id="sortBy">
+                                <option value="ratio">ratio desc</option>
+                                <option value="payload">payload desc</option>
+                                <option value="debris">debris desc</option>
+                                <option value="alpha">country A→Z</option>
+                            </select>
+                        </label>
+                    </div>
+                    <svg id="ratioSvg" width="100%" height="560"></svg>
+                </section>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Debris-to-Payload Ratio by Country</h2>
+                        <p>The following horizontal bar chart compares the amount of space debris that different countries generate, relative to the number of operational payloads that they successfully deploy: A higher debris-to-payload ratio means that a country creates more orbital junk per mission, which is a key indicator of environmental responsibility-or lack thereof-in the context of space operations.</p>
+                    </div>
                 </div>
-                <svg id="ratioSvg" width="100%" height="560"></svg>
-            </section>
+            </div>
         </div>
 
-        <!-- Original: Objects in Orbit Over Time -->
-        <div class="viz-card scroll-section" data-step="11">
-            <div class="viz-title">Objects in Orbit Over Time</div>
-            <section id="timeSec">
-                <svg id="timeSvg" width="100%" height="420"></svg>
-                <svg id="brushSvg" width="100%" height="120"></svg>
-            </section>
-            <div id="status" style="font-size:0.8rem; color:#64748b; margin-top:1rem;"></div>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <section id="timeSec">
+                    <svg id="timeSvg" width="100%" height="420"></svg>
+                    <svg id="brushSvg" width="100%" height="120"></svg>
+                </section>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Objects in Orbit Over Time by Type</h2>
+                        <p>This line chart represents the accumulation of three categories of objects in orbit from 1960 to 2025: Payloads (blue), Debris fragments (red), and Rocket bodies (orange). The increasing steepness of the debris curve reflects space's growing pollution problem-a risk that worsens with each new launch and all the fragments left in its wake.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
 
-    <!-- Scripts -->
     <script src="Isha_script_con.js"></script>
     <script src="dheeraj_script.js"></script>
     <script src="original_script.js?v=4"></script>
-    <script src="scrollama.js"></script>
 
 </body>
 
