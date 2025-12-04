@@ -187,7 +187,6 @@ input[type="range"] {
 
 .chord-path {
     fill-opacity: 0.7;
-    stroke: #333;
     stroke-width: 0.5px;
     transition: fill-opacity 0.2s, stroke-width 0.2s;
 }
@@ -894,14 +893,14 @@ html {
     position: sticky;
     top: 0;
     left: 0;
-    width: 55%;
+    width: 70%;
     height: 100vh;
     background: transparent;
     z-index: 1;
 }
 
 .scrolly-story {
-    width: 45%;
+    width: 30%;
     padding: 2rem;
     position: relative;
 }
@@ -931,25 +930,25 @@ html {
     backdrop-filter: blur(10px);
     border: 1px solid var(--border-color);
     border-radius: 1rem;
-    padding: 2.5rem;
+    padding: 1.5rem;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .story-content h2 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--accent-color);
     margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     background: linear-gradient(to right, #38bdf8, #818cf8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .story-content p {
-    font-size: 1.1rem;
-    line-height: 1.8;
+    font-size: 0.95rem;
+    line-height: 1.6;
     color: #e2e8f0;
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
 }
 
 .stat-highlight {
@@ -1005,7 +1004,7 @@ html {
 }
 
 .scrolly-container-single .scrolly-viz {
-    width: 60%;
+    width: 70%;
     padding: 2rem;
     background: transparent;
     display: flex;
@@ -1014,7 +1013,7 @@ html {
 }
 
 .scrolly-container-single .scrolly-story {
-    width: 40%;
+    width: 30%;
     padding: 3rem 2rem;
     display: flex;
     align-items: center;

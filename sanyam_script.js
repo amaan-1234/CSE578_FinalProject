@@ -91,7 +91,7 @@
             .attr("class", "chord-arc")
             .attr("d", arcGen)
             .attr("fill", d => palette(uniq[d.index]))
-            .attr("stroke", d => d3.rgb(palette(uniq[d.index])).darker())
+            .attr("stroke", d => d3.rgb(palette(uniq[d.index])))
             .on("mouseenter", function(e, d) {
                 d3.select(this).style("opacity", 1);
                 core.selectAll(".chord-path").style("opacity", p => 
@@ -122,7 +122,6 @@
             .attr("class", "chord-path")
             .attr("d", ribGen)
             .attr("fill", d => palette(uniq[d.source.index]))
-            .style("mix-blend-mode", "multiply")
             .on("mouseenter", function(e, d) {
                 d3.select(this).raise();
                 showInfo(e, `<strong>${uniq[d.source.index]} → ${uniq[d.target.index]}</strong><br>Missions: ${d.source.value.toLocaleString()}`);
@@ -133,12 +132,29 @@
 
     const renderDefense = (stats, objs) => {
         canvasB.selectAll("*").remove();
+
+        // Add glow filter for enhanced visibility
+        const defs = canvasB.append("defs");
+        const filter = defs.append("filter").attr("id", "shield-glow");
+        filter.append("feGaussianBlur").attr("stdDeviation", "4").attr("result", "coloredBlur");
+        const feMerge = filter.append("feMerge");
+        feMerge.append("feMergeNode").attr("in", "coloredBlur");
+        feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+        // Add radial gradient for heatmap effect
+        const radialGrad = defs.append("radialGradient").attr("id", "heatmap-gradient");
+        radialGrad.append("stop").attr("offset", "0%").attr("stop-color", "#22c55e").attr("stop-opacity", "0.8");
+        radialGrad.append("stop").attr("offset", "50%").attr("stop-color", "#eab308").attr("stop-opacity", "0.6");
+        radialGrad.append("stop").attr("offset", "100%").attr("stop-color", "#ef4444").attr("stop-opacity", "0.4");
+
         const base = canvasB.append("g").attr("transform", `translate(${wB / 2}, ${hB / 2})`);
         const rMax = Math.min(wB, hB) / 2 - 40;
 
         const scaleR = d3.scaleLinear().domain(d3.extent(stats, s => s.Decade)).range([rMax * 0.25, rMax * 0.85]);
         const scaleD = d3.scaleLinear().domain([0, d3.max(objs, o => o.dist)]).range([scaleR.range()[1] + 15, rMax * 0.95]);
         const scaleS = d3.scaleLinear().domain(d3.extent(objs, o => o.mag)).range([6, 2]);
+
+        // Enhanced color map with more vibrant colors for heatmap effect
         const colMap = d3.scaleSequential(d3.interpolateRdYlGn).domain([0.3, 1.0]);
 
         const zones = base.selectAll(".shield-ring-group").data(stats.slice().reverse()).join("g");
@@ -147,9 +163,11 @@
             .attr("class", "shield-ring")
             .attr("r", 0)
             .attr("fill", d => colMap(d.Rate))
-            .attr("stroke", d => d3.rgb(colMap(d.Rate)).darker(1))
+            .attr("stroke", d => d3.rgb(colMap(d.Rate)).brighter(0.5))
+            .attr("stroke-width", 2)
             .attr("fill-opacity", d => 0.15 + (d.Rate * 0.25))
             .style("pointer-events", "all")
+            .style("filter", "url(#shield-glow)")
             .on("mouseenter", function(e, d) {
                 e.stopPropagation();
                 d3.select(this).transition().duration(200).attr("fill-opacity", 0.35 + (d.Rate * 0.35));
@@ -226,6 +244,8 @@
            .selectAll("text").style("font-size", "9px");
     };
 
+    let globalStats, globalObjs;
+
     Promise.all([
         d3.csv("Space_Corrected.csv"),
         d3.csv("near earth objects.csv")
@@ -266,7 +286,216 @@
             return (isNaN(dist) || isNaN(mag)) ? null : { dist, mag };
         }).filter(Boolean);
 
+        globalStats = dataB_Stats;
+        globalObjs = dataB_Objs;
+
         renderRelations(dataA);
         renderDefense(dataB_Stats, dataB_Objs);
+
+        // Setup scrollytelling after visualization is rendered
+        setTimeout(setupShieldScrollytelling, 500);
     });
+
+    // Scrollytelling functionality for shield diagram with enhanced heatmap effects
+    function updateShieldByDecade(decade) {
+        console.log('updateShieldByDecade called with decade:', decade);
+
+        const base = canvasB.select("g");
+        if (base.empty()) {
+            console.log('Warning: Shield base element not found');
+            return;
+        }
+
+        const rings = base.selectAll(".shield-ring");
+        const dots = base.selectAll(".threat-dot");
+        const labels = base.selectAll(".decade-label");
+
+        console.log('Shield elements found - rings:', rings.size(), 'dots:', dots.size(), 'labels:', labels.size());
+
+        // Enhanced color map for heatmap effect
+        const heatmapColor = d3.scaleSequential(d3.interpolateRdYlGn).domain([0.3, 1.0]);
+
+        if (decade === 'intro') {
+            // Introduction: Show all rings with moderate heatmap
+            rings.transition().duration(1000)
+                .attr("fill-opacity", d => 0.25 + (d.Rate * 0.35))
+                .attr("stroke-width", 3)
+                .attr("stroke-opacity", 0.8)
+                .attr("fill", d => heatmapColor(d.Rate))
+                .attr("stroke", d => d3.rgb(heatmapColor(d.Rate)).brighter(0.5));
+
+            labels.transition().duration(1000)
+                .attr("opacity", 1)
+                .attr("font-size", "13px")
+                .attr("font-weight", "600")
+                .attr("fill", d => heatmapColor(d.Rate));
+
+            dots.transition().duration(1000)
+                .attr("opacity", 0.5)
+                .attr("r", function() {
+                    const d = d3.select(this).datum();
+                    const scaleS = d3.scaleLinear().domain(d3.extent(globalObjs, o => o.mag)).range([6, 2]);
+                    return scaleS(d.mag);
+                });
+
+        } else if (decade === 'threats') {
+            // Emphasize external threats - dim rings, bright pulsing dots
+            rings.transition().duration(1000)
+                .attr("fill-opacity", 0.08)
+                .attr("stroke-width", 1)
+                .attr("stroke-opacity", 0.3);
+
+            labels.transition().duration(1000)
+                .attr("opacity", 0.2)
+                .attr("font-size", "10px");
+
+            dots.transition().duration(600)
+                .attr("opacity", 1)
+                .attr("r", function() {
+                    const d = d3.select(this).datum();
+                    const scaleS = d3.scaleLinear().domain(d3.extent(globalObjs, o => o.mag)).range([6, 2]);
+                    return scaleS(d.mag) * 2;
+                })
+                .attr("fill", "#ef4444")
+                .transition().duration(600)
+                .attr("r", function() {
+                    const d = d3.select(this).datum();
+                    const scaleS = d3.scaleLinear().domain(d3.extent(globalObjs, o => o.mag)).range([6, 2]);
+                    return scaleS(d.mag) * 1.6;
+                })
+                .transition().duration(600)
+                .attr("r", function() {
+                    const d = d3.select(this).datum();
+                    const scaleS = d3.scaleLinear().domain(d3.extent(globalObjs, o => o.mag)).range([6, 2]);
+                    return scaleS(d.mag) * 2;
+                });
+
+        } else if (decade === 'conclusion') {
+            // Show complete shield system with full heatmap
+            rings.transition().duration(1000)
+                .attr("fill-opacity", d => 0.3 + (d.Rate * 0.45))
+                .attr("stroke-width", 3)
+                .attr("stroke-opacity", 0.9)
+                .attr("fill", d => heatmapColor(d.Rate))
+                .attr("stroke", d => d3.rgb(heatmapColor(d.Rate)).brighter(0.5));
+
+            labels.transition().duration(1000)
+                .attr("opacity", 1)
+                .attr("font-size", "14px")
+                .attr("font-weight", "700")
+                .attr("fill", d => heatmapColor(d.Rate));
+
+            dots.transition().duration(1000)
+                .attr("opacity", 0.6)
+                .attr("r", function() {
+                    const d = d3.select(this).datum();
+                    const scaleS = d3.scaleLinear().domain(d3.extent(globalObjs, o => o.mag)).range([6, 2]);
+                    return scaleS(d.mag) * 1.2;
+                })
+                .attr("fill", "#fbbf24");
+
+        } else {
+            // Highlight specific decade ring with dramatic heatmap effect
+            const targetDecade = parseInt(decade);
+            console.log('Highlighting decade:', targetDecade);
+
+            rings.each(function(d) {
+                const ring = d3.select(this);
+                if (d.Decade === targetDecade) {
+                    // Highlighted ring: dramatic heatmap with pulsing effect
+                    ring.transition().duration(800)
+                        .attr("fill-opacity", 0.7 + (d.Rate * 0.3))
+                        .attr("stroke-width", 8)
+                        .attr("stroke-opacity", 1)
+                        .attr("fill", heatmapColor(d.Rate))
+                        .attr("stroke", d3.rgb(heatmapColor(d.Rate)).brighter(1))
+                        .style("filter", "url(#shield-glow)")
+                        .transition().duration(600)
+                        .attr("stroke-width", 6)
+                        .transition().duration(600)
+                        .attr("stroke-width", 8);
+                } else {
+                    // Dimmed rings
+                    ring.transition().duration(800)
+                        .attr("fill-opacity", 0.05)
+                        .attr("stroke-width", 1)
+                        .attr("stroke-opacity", 0.2)
+                        .style("filter", "none");
+                }
+            });
+
+            labels.transition().duration(800)
+                .attr("opacity", d => d.Decade === targetDecade ? 1 : 0.15)
+                .attr("font-size", d => d.Decade === targetDecade ? "18px" : "10px")
+                .attr("font-weight", d => d.Decade === targetDecade ? "bold" : "400")
+                .attr("fill", d => d.Decade === targetDecade ? heatmapColor(d.Rate) : "#666");
+
+            dots.transition().duration(800)
+                .attr("opacity", 0.25)
+                .attr("r", function() {
+                    const d = d3.select(this).datum();
+                    const scaleS = d3.scaleLinear().domain(d3.extent(globalObjs, o => o.mag)).range([6, 2]);
+                    return scaleS(d.mag) * 0.8;
+                });
+        }
+    }
+
+    function setupShieldScrollytelling() {
+        console.log('Setting up shield scrollytelling...');
+
+        // Find story steps specifically for the shield visualization
+        const allSteps = Array.from(document.querySelectorAll('.story-step'));
+        const shieldSteps = allSteps.filter(step => step.dataset.decade !== undefined);
+
+        console.log('Found story steps with data-decade:', shieldSteps.length);
+
+        if (shieldSteps.length === 0) {
+            console.log('No story steps found for shield scrollytelling');
+            return;
+        }
+
+        let currentStepIndex = -1;
+
+        function handleScroll() {
+            const windowHeight = window.innerHeight;
+            let activeIndex = -1;
+
+            shieldSteps.forEach((step, index) => {
+                const rect = step.getBoundingClientRect();
+                const stepMiddle = rect.top + rect.height / 2;
+                const isInRange = stepMiddle >= 0 && stepMiddle <= windowHeight * 0.6;
+
+                if (isInRange) {
+                    activeIndex = index;
+                }
+            });
+
+            if (activeIndex !== currentStepIndex && activeIndex >= 0) {
+                currentStepIndex = activeIndex;
+                const decade = shieldSteps[activeIndex].dataset.decade;
+                console.log('Shield scroll: activating step', activeIndex, 'decade:', decade);
+
+                // Update visual state of story steps
+                shieldSteps.forEach((step, i) => {
+                    if (i === activeIndex) {
+                        step.classList.add('active');
+                    } else {
+                        step.classList.remove('active');
+                    }
+                });
+
+                // Update visualization
+                updateShieldByDecade(decade);
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        // Call multiple times to ensure it catches the initial state
+        setTimeout(handleScroll, 100);
+        setTimeout(handleScroll, 500);
+        setTimeout(handleScroll, 1000);
+
+        console.log('Shield scrollytelling setup complete');
+    }
 })();

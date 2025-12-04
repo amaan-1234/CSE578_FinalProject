@@ -621,6 +621,9 @@
 
     console.log(`✅ Found ${singleContainers.length} single-description containers`);
 
+    // Track which containers have been animated
+    const animatedContainers = new Set();
+
     function checkVisibility() {
       const windowHeight = window.innerHeight;
       const triggerPoint = windowHeight * 0.75;
@@ -632,7 +635,15 @@
 
         // Container is in view if its top is above the trigger point and bottom is below viewport top
         if (containerTop < triggerPoint && containerBottom > 0) {
+          const wasInView = container.classList.contains('in-view');
           container.classList.add('in-view');
+
+          // Dispatch event only the first time it comes into view
+          if (!wasInView && !animatedContainers.has(container)) {
+            animatedContainers.add(container);
+            const event = new CustomEvent('scrolly-inview', { detail: { container } });
+            container.dispatchEvent(event);
+          }
         } else {
           container.classList.remove('in-view');
         }

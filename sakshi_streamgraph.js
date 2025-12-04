@@ -488,4 +488,131 @@
 			.duration(750)
 			.attr("d", area);
 	}
+
+	// Scrollytelling functionality
+	function updateVisualizationByPeriod(period) {
+		console.log('Updating streamgraph for period:', period);
+
+		// Always show full timeline (1957-2020), just change highlighting
+		// Reset to show all years if we've filtered before
+		startYearIndex = 0;
+		endYearIndex = allYears.length - 1;
+
+		// Update UI elements if they exist
+		const rangeStart = d3.select("#rangeStart-stream");
+		const rangeEnd = d3.select("#rangeEnd-stream");
+		if (!rangeStart.empty()) rangeStart.property("value", startYearIndex);
+		if (!rangeEnd.empty()) rangeEnd.property("value", endYearIndex);
+
+		// Update the visualization to show full timeline
+		updatePeriod();
+
+		// Apply intelligent highlighting based on the story narrative
+		if (period === 'intro') {
+			// Introduction: Show both layers equally to set the stage
+			layers.transition().duration(800)
+				.attr("opacity", 0.8)
+				.attr("stroke", 'none')
+				.attr("stroke-width", 0);
+
+		} else if (period === '2006-2010') {
+			// Government-Led Era: Emphasize State dominance
+			// State layer bright, Private layer very dim
+			layers.transition().duration(800)
+				.attr("opacity", d => d.key === 'State' ? 1.0 : 0.15)
+				.attr("stroke", d => d.key === 'State' ? '#4ade80' : 'none')
+				.attr("stroke-width", d => d.key === 'State' ? 2 : 0);
+
+		} else if (period === '2011-2015') {
+			// Commercial Expansion Begins: Both visible, Private growing
+			// Show transition - both layers visible with Private starting to shine
+			layers.transition().duration(800)
+				.attr("opacity", d => d.key === 'Private' ? 0.9 : 0.6)
+				.attr("stroke", d => d.key === 'Private' ? '#fb923c' : 'none')
+				.attr("stroke-width", d => d.key === 'Private' ? 2 : 0);
+
+		} else if (period === '2016-2020') {
+			// The Turning Point: Private sector takeover
+			// Private layer bright, State layer dim
+			layers.transition().duration(800)
+				.attr("opacity", d => d.key === 'Private' ? 1.0 : 0.15)
+				.attr("stroke", d => d.key === 'Private' ? '#fb923c' : 'none')
+				.attr("stroke-width", d => d.key === 'Private' ? 2 : 0);
+
+		} else if (period === 'conclusion') {
+			// Conclusion: Show both to demonstrate the complete transformation
+			layers.transition().duration(800)
+				.attr("opacity", 0.85)
+				.attr("stroke", 'none')
+				.attr("stroke-width", 0);
+		}
+	}
+
+	// Setup scrollytelling
+	function setupScrollytelling() {
+		console.log('Setting up streamgraph scrollytelling...');
+
+		// Find story steps in the first scrolly-container (streamgraph)
+		const scrollyContainers = document.querySelectorAll('.scrolly-container');
+		if (scrollyContainers.length === 0) {
+			console.log('No scrolly-container found');
+			return;
+		}
+
+		// Get the first scrolly-container (streamgraph section)
+		const streamContainer = scrollyContainers[0];
+		const storySteps = streamContainer.querySelectorAll('.story-step');
+
+		console.log('Found streamgraph story steps:', storySteps.length);
+
+		if (storySteps.length === 0) {
+			console.log('No story steps found for streamgraph scrollytelling');
+			return;
+		}
+
+		let currentStepIndex = -1;
+
+		function handleScroll() {
+			const windowHeight = window.innerHeight;
+			let activeIndex = -1;
+
+			storySteps.forEach((step, index) => {
+				const rect = step.getBoundingClientRect();
+				const stepMiddle = rect.top + rect.height / 2;
+				const isInRange = stepMiddle >= 0 && stepMiddle <= windowHeight * 0.6;
+
+				if (isInRange) {
+					activeIndex = index;
+				}
+			});
+
+			if (activeIndex !== currentStepIndex && activeIndex >= 0) {
+				currentStepIndex = activeIndex;
+				const newPeriod = storySteps[activeIndex].dataset.period;
+				console.log('Streamgraph scroll: activating step', activeIndex, 'period:', newPeriod);
+
+				// Update visual state of story steps
+				storySteps.forEach((step, i) => {
+					if (i === activeIndex) {
+						step.classList.add('active');
+					} else {
+						step.classList.remove('active');
+					}
+				});
+
+				// Update visualization
+				updateVisualizationByPeriod(newPeriod);
+			}
+		}
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		setTimeout(handleScroll, 100);
+		setTimeout(handleScroll, 500);
+		setTimeout(handleScroll, 1000);
+
+		console.log('Streamgraph scrollytelling setup complete');
+	}
+
+	// Initialize scrollytelling after data is loaded
+	setTimeout(setupScrollytelling, 1500);
 })();

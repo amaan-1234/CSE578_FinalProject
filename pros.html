@@ -33,77 +33,265 @@
     <div class="container">
 
         <!-- Abbhijit: NEOs - Bar Chart -->
-        <div class="viz-card " data-step="0">
-            <div class="viz-title">Near-Earth Objects: Hazard Classification</div>
-            <div id="barChart"></div>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <div class="viz-section">
+                    <div id="barChart"></div>
+                </div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Near-Earth Objects: Hazard Classification</h2>
+                        <p>This bar graph shows the amount of Near-Earth objects detected through the development of technological capability over time, from the year 2008 to 2022.</p>
+                        <p>The rising bars in the graph demonstrate how our capability to detect NEOs as they approach the Earth has improved, allowing for earlier identification of NEOs which are potential threats to our planet and thus become the first step in mitigating risk to Earth.</p>
+                        <p>Enhanced detection systems and space-based telescopes have exponentially increased our awareness of objects that could pose a threat, giving us more time to develop mitigation strategies.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Abbhijit: NEOs - Scatter Plot -->
-        <div class="viz-card " data-step="1">
-            <div class="viz-title">Near-Earth Objects: Size vs Distance Analysis</div>
-            <div id="scatterPlot"></div>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <div class="viz-section">
+                    <div id="scatterPlot"></div>
+                </div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Near-Earth Objects: Size vs Distance Analysis</h2>
+                        <p>This scatterplot shows the distances that asteroid flybys have been from Earth versus their brightness (magnitude).</p>
+                        <p>The chart provides a comprehensive view of all the objects that have recently been flying near Earth and the varying degrees of danger they present.</p>
+                        <p>Objects closer to Earth and with higher brightness (lower magnitude values) represent more significant potential threats. This visualization helps scientists prioritize which objects require continued monitoring and potential defensive action.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Sakshi: Streamgraph -->
-        <div class="viz-card " data-step="2">
-            <div class="viz-title">The Rise of Commercial Spaceflight</div>
-            <div class="controls">
-                <div class="control-group">
-                    <label>Year Range:</label>
-                    <span id="yearRange-stream"></span>
-                </div>
-                <div class="control-group">
-                    <label>Start:</label>
-                    <input type="range" id="rangeStart-stream">
-                    <span id="rangeStartLabel-stream"></span>
-                </div>
-                <div class="control-group">
-                    <label>End:</label>
-                    <input type="range" id="rangeEnd-stream">
-                    <span id="rangeEndLabel-stream"></span>
-                </div>
-                <button id="resetPeriodBtn-stream"
-                    style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">Reset</button>
+        <!-- Sakshi: Streamgraph - Scrollytelling -->
+        <!-- Story:
+         Area Chart: Between 1957 and 2020, you can see an enormous change in how many private space launches were made compared to government space launches. The area in blue is an indication of the impact that the growth of the number of private companies has had on the space industry.
+        Narrative & Story Flow
+        Before the Visualization
+        Up until recently, space travel was only available to those who could afford it — typically governments. The arrival of private companies has had a tremendous impact on the space industry, such as dramatically reducing the cost of a launch, increasing technological innovation, and allowing for an increased frequency and level of ambition in space missions.
+        During the Visualization (Scroll Beats)
+        Scroll Beat 1 — “A Government-Led Era” (2006–2010)
+        Narration:
+        Early on in the timeframe represented in the chart, the government was the only player in this market with a few private missions at the bottom of the chart.
+        Scroll Beat 2 — “Commercial Expansion Begins” (2011–2015)
+        Narration:
+        The private sector's inception date for producing reusable rockets, small satellites, and low-cost launch systems. The private sector has historically accounted for a large portion of the total number of flights.
+        Scroll Beat 3 — “The Turning Point” (2015–2020)
+        Narration:
+        In 2015, private missions began to surpass government missions in terms of quantity for the first time. By 2020, private enterprises accounted for most launches, emphasizing how rapidly innovation has moved forward for the industry.
+        After the Visualization
+        A significant change has occurred in the area represented by the shaded blue area below — space is no longer exclusive to national space agencies, but instead open to people innovating worldwide.
+        Through the increased volume of launches due to increased competition and greater efficiencies due to reusability, private companies have lowered the cost per launch as well as reducing the time between launches.
+
+-->
+        <div class="scrolly-container">
+            <div class="scrolly-viz">
+                <div id="viz-stream" style="width:100%; height:100%;"></div>
+                <div id="tooltip-stream" class="tooltip" style="display:none;"></div>
             </div>
-            <div style="display:flex; gap:2rem; margin-bottom:1rem; font-size:0.9rem;">
-                <div>Total: <strong id="totalLaunches-stream">0</strong></div>
-                <div style="color:#4CAF50">State: <strong id="stateLaunches-stream">0</strong></div>
-                <div style="color:#FF6B35">Private: <strong id="privateLaunches-stream">0</strong></div>
+            <div class="scrolly-story">
+                <div class="story-step" data-period="intro">
+                    <div class="story-content">
+                        <h2>The Space Launch Revolution</h2>
+                        <p>This visualization spans from 1957 to 2020, revealing one of the most dramatic transformations in space exploration history.</p>
+                        <p>Watch as two distinct streams tell the story: <strong style="color: #4ade80;">Government (State)</strong> launches in green and <strong style="color: #fb923c;">Private</strong> launches in orange.</p>
+                        <p>The complete timeline shows how space access evolved from an exclusive government domain to a thriving commercial industry.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="2006-2010">
+                    <div class="story-content">
+                        <h2>Government Dominance</h2>
+                        <p>For decades, space was an exclusive club. The <strong style="color: #4ade80;">green stream</strong> represents government-led space programs—NASA, Roscosmos, ESA, and other state agencies.</p>
+                        <div class="stat-highlight">
+                            <span class="stat-number">~95%</span>
+                            <span class="stat-label">Government Control</span>
+                        </div>
+                        <p>Notice how the green dominates the visualization. Private activity appears as barely visible at the bottom—a tiny orange sliver representing the few commercial satellites launched.</p>
+                        <p>State organizations had the resources, expertise, and budgets to reach orbit. Private companies were largely relegated to building satellites, not launching them.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="2011-2015">
+                    <div class="story-content">
+                        <h2>The Private Sector Awakens</h2>
+                        <p>Watch the <strong style="color: #fb923c;">orange stream</strong> begin to grow. Private companies started developing reusable rockets, cost-effective small satellite launchers, and new business models.</p>
+                        <div class="stat-highlight">
+                            <span class="stat-number">↑ 300%</span>
+                            <span class="stat-label">Private Launch Growth</span>
+                        </div>
+                        <p>Both streams are now visible. The green (government) remains substantial, but the orange (private) is expanding rapidly. Competition drives innovation—launch costs begin falling, and mission frequency increases.</p>
+                        <p>Companies like SpaceX, Rocket Lab, and others prove that commercial spaceflight is not just possible—it's profitable.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="2016-2020">
+                    <div class="story-content">
+                        <h2>Private Sector Overtakes Government</h2>
+                        <p>The historic crossover: the <strong style="color: #fb923c;">orange stream surpasses the green</strong>. For the first time in history, private launches outnumber government missions.</p>
+                        <div class="warning-text">
+                            <strong>The Tipping Point:</strong> Private sector becomes the dominant force in space access, fundamentally reshaping the industry.
+                        </div>
+                        <p>The orange stream now dominates the visualization. Private companies launch more frequently, more affordably, and with greater innovation than ever before.</p>
+                        <p>Government agencies increasingly become customers of private launch providers rather than operators. The paradigm has completely reversed.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-period="conclusion">
+                    <div class="story-content">
+                        <h2>A Democratized Space Age</h2>
+                        <p>Look at the complete timeline once more. The transformation is undeniable: from a <strong style="color: #4ade80;">green-dominated</strong> era to an <strong style="color: #fb923c;">orange-dominated</strong> future.</p>
+                        <p>This isn't just about launch numbers—it represents democratized access to space. What once required nation-state resources can now be achieved by innovative companies and entrepreneurs.</p>
+                        <p><strong>Lower costs</strong> through reusability, <strong>higher frequency</strong> through competition, and <strong>greater ambition</strong> through commercial incentives have fundamentally changed what's possible.</p>
+                        <p style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">The shift from green to orange represents humanity's transition from space exploration as a government monopoly to space as an accessible frontier for innovation worldwide.</p>
+                    </div>
+                </div>
             </div>
-            <div id="viz-stream"></div>
-            <div id="tooltip-stream" class="tooltip" style="display:none;"></div>
         </div>
 
         <!-- Sakshi: Waffle -->
-        <div class="viz-card " data-step="3">
-            <div class="viz-title">Missions by Decade</div>
-            <div class="controls">
-                <div class="control-group">
-                    <label>Select Decade:</label>
-                    <select id="yearSelect-waffle">
-                        <option value="all">All Decades</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label>Missions:</label>
-                    <strong id="currentCount-waffle">0</strong>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <div class="viz-section" style="width: 100%; padding: 2rem;">
+                    <div class="viz-title" style="text-align: center; color: var(--accent-color); font-size: 1.5rem; margin-bottom: 1.5rem;">Missions by Decade</div>
+                    <div class="controls" style="margin-bottom: 1.5rem;">
+                        <div class="control-group">
+                            <label>Select Decade:</label>
+                            <select id="yearSelect-waffle">
+                                <option value="all">All Decades</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Missions:</label>
+                            <strong id="currentCount-waffle">0</strong>
+                        </div>
+                    </div>
+                    <div id="viz-waffle"></div>
+                    <div id="legend-waffle" style="margin-top:1rem; display:flex; gap:2rem;"></div>
+                    <div id="tooltip-waffle" class="tooltip" style="display:none;"></div>
                 </div>
             </div>
-            <div id="viz-waffle"></div>
-            <div id="legend-waffle" style="margin-top:1rem; display:flex; gap:2rem;"></div>
-            <div id="tooltip-waffle" class="tooltip" style="display:none;"></div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Missions by Decade: Success vs Failure</h2>
+                        <p>Between the 1950's and 2020's, this Waffle Chart demonstrates the relationship between the successes and failures of space missions across different decades.</p>
+                        <div class="stat-highlight">
+                            <span class="stat-number">📊</span>
+                            <span class="stat-label">Interactive Decade View</span>
+                        </div>
+                        <p><strong style="color: #4ade80;">Green squares</strong> indicate mission success. <strong style="color: #ef4444;">Red squares</strong> indicate mission failure.</p>
+                        <p>The number of red squares compared to green squares between the first three decades of the last century is far more significant than that of the last five decades, demonstrating the dramatic improvement in mission reliability over time.</p>
+                        <p>Use the dropdown to explore each decade individually and see how space mission success rates have evolved from the early experimental era to today's highly reliable operations.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Sanyam: Chord Diagram -->
-        <div class="viz-card " data-step="4">
-            <div class="viz-title">Space Ecosystem Collaboration Network</div>
-            <div id="vis-container-1"></div>
+        <div class="scrolly-container-single">
+            <div class="scrolly-viz">
+                <div class="viz-section" style="width: 100%;">
+                    <div class="viz-title" style="text-align: center; color: var(--accent-color); font-size: 1.5rem; margin-bottom: 1.5rem;">Space Ecosystem Collaboration Network</div>
+                    <div id="vis-container-1"></div>
+                </div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step single-desc active">
+                    <div class="story-content">
+                        <h2>Space Ecosystem Collaboration Network</h2>
+                        <p>This interactive network portrays the global partnerships between countries that participate in various forms of space exploration.</p>
+                        <p>The chord connections stretching across the diagram visualize the increasing interconnectedness of the world's ability to explore outer space together.</p>
+                        <div class="stat-highlight">
+                            <span class="stat-number">🌍</span>
+                            <span class="stat-label">Global Cooperation</span>
+                        </div>
+                        <p>This includes all forms of international collaboration: joint satellite launches, shared space station operations, cooperative scientific missions like tracking asteroids that could impact Earth, and technology transfer agreements.</p>
+                        <p>The thickness of each connection represents the volume of collaborative missions between nations, demonstrating that space exploration has become a truly global endeavor rather than a competitive race.</p>
+                        <p>Hover over countries to see their specific partnerships and mission counts.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Sanyam: Shield Diagram -->
-        <div class="viz-card " data-step="5">
-            <div class="viz-title">Mission Success Shield Analysis</div>
-            <div id="vis-container-2"></div>
+        <!-- Sanyam: Shield Diagram - Scrollytelling -->
+        <div class="scrolly-container">
+            <div class="scrolly-viz">
+                <div id="vis-container-2" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="scrolly-story">
+                <div class="story-step" data-decade="intro">
+                    <div class="story-content">
+                        <h2>Mission Success Shield</h2>
+                        <p>Every mission to space is a calculated risk. Decades of engineering, billions in investment, and years of planning can be lost in seconds if something goes wrong.</p>
+                        <p>This visualization shows how humanity has learned to master space—decade by decade—transforming failure into success through experience and innovation.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-decade="1960">
+                    <div class="story-content">
+                        <h2>The Early Days (1960s)</h2>
+                        <p>The space race began with more failures than successes. Early rockets exploded on launch pads, satellites failed to reach orbit, and missions were plagued by technical issues.</p>
+                        <div class="stat-highlight">
+                            <span class="stat-number">~65%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                        <p>Every failure taught engineers valuable lessons about what worked—and what didn't.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-decade="1970">
+                    <div class="story-content">
+                        <h2>Learning from Mistakes (1970s-1980s)</h2>
+                        <p>As space agencies gained experience, success rates improved. Better quality control, redundant systems, and lessons learned from failures all contributed to more reliable missions.</p>
+                        <p>The shield of protection around our missions was growing stronger.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-decade="1990">
+                    <div class="story-content">
+                        <h2>The Modern Era (1990s-2000s)</h2>
+                        <p>By the 1990s, space missions had become remarkably reliable. Computer simulations, better materials, and decades of operational experience meant that success was the expectation, not the exception.</p>
+                        <div class="stat-highlight">
+                            <span class="stat-number">~90%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-step" data-decade="2010">
+                    <div class="story-content">
+                        <h2>Near-Perfect Reliability (2010s-2020s)</h2>
+                        <p>Today's space missions achieve success rates above 95%. Reusable rockets land themselves with pinpoint precision. Satellites operate for years beyond their design lifetimes. Spacecraft visit distant worlds with near-perfect reliability.</p>
+                        <div class="warning-text">
+                            <strong>The Shield Holds:</strong> Each decade's lessons reinforce our defenses against failure, making space more accessible and reliable than ever before.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="story-step" data-decade="threats">
+                    <div class="story-content">
+                        <h2>External Threats</h2>
+                        <p>But space still holds dangers we cannot fully control. The dots surrounding our protective shield represent Near-Earth Objects—asteroids and comets that pass close to our planet.</p>
+                        <p>While we've mastered the technology of spaceflight, the universe itself remains unpredictable. Our success shield protects us from our own mistakes, but vigilance against natural threats remains essential.</p>
+                    </div>
+                </div>
+
+                <div class="story-step" data-decade="conclusion">
+                    <div class="story-content">
+                        <h2>A Foundation for the Future</h2>
+                        <p>The concentric rings of improving success rates represent more than just statistics—they represent humanity's growing capability to operate safely in space.</p>
+                        <p>This hard-won reliability makes possible everything we dream of: sustainable space stations, lunar bases, Mars missions, and eventually, a true spacefaring civilization.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -113,6 +301,7 @@
     <script src="sakshi_streamgraph.js"></script>
     <script src="sakshi_waffle.js"></script>
     <script src="sanyam_script.js"></script>
+    <script src="dheeraj_script.js"></script>
 
 </body>
 

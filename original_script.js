@@ -243,7 +243,22 @@
     // Initial
     if (topNVal && topNEl) topNVal.textContent = topNEl.value;
     if (minTotVal && minTotEl) minTotVal.textContent = minTotEl.value;
-    render();
+
+    // Only render when the container comes into view
+    const ratioSection = document.getElementById('ratioSec');
+    if (ratioSection) {
+      const scrollyContainer = ratioSection.closest('.scrolly-container-single');
+      if (scrollyContainer) {
+        // Listen for scroll-into-view event
+        scrollyContainer.addEventListener('scrolly-inview', () => {
+          console.log('Ratio chart coming into view - rendering with animation');
+          render();
+        }, { once: true });
+      } else {
+        // Fallback if not in a scrolly container
+        render();
+      }
+    }
   }
 
   // --------------------------------------------------------------------------
