@@ -1,321 +1,314 @@
 (function () {
-  const canvas = document.getElementById("stars-dheeraj");
-  if (canvas) {
-    const ctx = canvas.getContext("2d");
+  const dheerajCanvas = document.getElementById("aadiss-stars-dheeraj");
+  if (dheerajCanvas) {
+    const dheerajCtx = dheerajCanvas.getContext("2d");
 
-    function drawStars() {
-      const { innerWidth: w, innerHeight: h } = window;
-      canvas.width = w;
-      canvas.height = h;
-      ctx.clearRect(0, 0, w, h);
+    function dheerajDrawStars() {
+      const { innerWidth: dheerajW, innerHeight: dheerajH } = window;
+      dheerajCanvas.width = dheerajW;
+      dheerajCanvas.height = dheerajH;
+      dheerajCtx.clearRect(0, 0, dheerajW, dheerajH);
 
-      for (let i = 0; i < 80; i++) {
-        ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.9})`;
-        ctx.beginPath();
-        ctx.arc(
-          Math.random() * w,
-          Math.random() * h,
+      for (let dheerajI = 0; dheerajI < 80; dheerajI++) {
+        dheerajCtx.fillStyle = `rgba(255,255,255,${Math.random() * 0.9})`;
+        dheerajCtx.beginPath();
+        dheerajCtx.arc(
+          Math.random() * dheerajW,
+          Math.random() * dheerajH,
           Math.random() * 1.2,
           0, 2 * Math.PI
         );
-        ctx.fill();
+        dheerajCtx.fill();
       }
     }
 
-    drawStars();
-    window.addEventListener("resize", drawStars);
+    dheerajDrawStars();
+    window.addEventListener("resize", dheerajDrawStars);
   }
 
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  document.querySelectorAll('.aadiss-nav-btn').forEach(dheerajBtn => {
+    dheerajBtn.addEventListener('click', dheerajE => {
+      dheerajE.preventDefault();
+      document.querySelectorAll('.aadiss-nav-btn').forEach(dheerajB => dheerajB.classList.remove('aadiss-active'));
+      dheerajBtn.classList.add('aadiss-active');
 
-      const target = document.querySelector(btn.getAttribute('href'));
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      const dheerajTarget = document.querySelector(dheerajBtn.getAttribute('href'));
+      if (dheerajTarget) dheerajTarget.scrollIntoView({ behavior: 'smooth' });
     });
   });
 
-
   window.addEventListener("DOMContentLoaded", () => {
 
-    const svg = d3.select("#viz-petals");
-    if (svg.empty()) return;
+    const dheerajSvg = d3.select("#aadiss-viz-petals");
+    if (dheerajSvg.empty()) return;
 
-    const container = svg.node().parentElement;
-    const containerWidth = container.getBoundingClientRect().width || 900;
-    const containerHeight = container.getBoundingClientRect().height || 600;
-    const width = containerWidth;
-    const height = containerHeight;
+    const dheerajContainer = dheerajSvg.node().parentElement;
+    const dheerajContainerWidth = dheerajContainer.getBoundingClientRect().width || 900;
+    const dheerajContainerHeight = dheerajContainer.getBoundingClientRect().height || 600;
+    const dheerajWidth = dheerajContainerWidth;
+    const dheerajHeight = dheerajContainerHeight;
 
-    // Update SVG dimensions
-    svg.attr("width", width).attr("height", height);
+    dheerajSvg.attr("width", dheerajWidth).attr("height", dheerajHeight);
 
-    // Unique tooltip
-    const tooltip = d3.select("body").append("div")
-      .attr("class", "tooltip")
-      .attr("id", "tooltip-dheeraj")
+    const dheerajTooltip = d3.select("body").append("div")
+      .attr("class", "aadiss-tooltip")
+      .attr("id", "aadiss-tooltip-dheeraj")
       .style("opacity", 0);
 
-    const rootG = svg.append("g");
-    const projection = d3.geoNaturalEarth1()
-      .translate([width / 2, height / 2])
+    const dheerajRootG = dheerajSvg.append("g");
+    const dheerajProjection = d3.geoNaturalEarth1()
+      .translate([dheerajWidth / 2, dheerajHeight / 2])
       .scale(175);
 
-    const geoPath = d3.geoPath(projection);
-    const impacts = ["Low", "Medium", "High"];
-    const impactColor = d3.scaleOrdinal()
-      .domain(impacts)
+    const dheerajGeoPath = d3.geoPath(dheerajProjection);
+    const dheerajImpacts = ["Low", "Medium", "High"];
+    const dheerajImpactColor = d3.scaleOrdinal()
+      .domain(dheerajImpacts)
       .range(["#ffd54f", "#ff8a65", "#ef5350"]);
 
-    const arcGen = d3.arc()
-      .innerRadius(d => d.innerR)
-      .outerRadius(d => d.outerR)
-      .startAngle(d => d.startA)
-      .endAngle(d => d.endA);
+    const dheerajArcGen = d3.arc()
+      .innerRadius(dheerajD => dheerajD.innerR)
+      .outerRadius(dheerajD => dheerajD.outerR)
+      .startAngle(dheerajD => dheerajD.startA)
+      .endAngle(dheerajD => dheerajD.endA);
 
-    // Internal state for visualization updates
-    let updateVizCallback = null;
+    let dheerajUpdateVizCallback = null;
 
     Promise.all([
       d3.json("countries-110m.json"),
       d3.csv("space_missions.csv")
-    ]).then(([worldData, missions]) => {
+    ]).then(([dheerajWorldData, dheerajMissions]) => {
 
-      missions.forEach(d => {
-        d.budget = +d["Budget (in Billion $)"] || 0;
-        d.success = +d["Success Rate (%)"] || 0;
-        d.impact = d["Environmental Impact"];
-        d.tech = d["Technology Used"];
-        d.country = d["Country"];
+      dheerajMissions.forEach(dheerajD => {
+        dheerajD.budget = +dheerajD["Budget (in Billion $)"] || 0;
+        dheerajD.success = +dheerajD["Success Rate (%)"] || 0;
+        dheerajD.impact = dheerajD["Environmental Impact"];
+        dheerajD.tech = dheerajD["Technology Used"];
+        dheerajD.country = dheerajD["Country"];
       });
 
-      const world = topojson.feature(worldData, worldData.objects.countries);
-      rootG.selectAll(".country")
-        .data(world.features)
+      const dheerajWorld = topojson.feature(dheerajWorldData, dheerajWorldData.objects.countries);
+      dheerajRootG.selectAll(".aadiss-country")
+        .data(dheerajWorld.features)
         .enter()
         .append("path")
-        .attr("class", "country")
-        .attr("d", geoPath);
+        .attr("class", "aadiss-country")
+        .attr("d", dheerajGeoPath);
 
-      const centroidByName = new Map();
-      world.features.forEach(f => {
-        const c = geoPath.centroid(f);
-        if (isFinite(c[0]) && isFinite(c[1])) {
-          centroidByName.set(f.properties.name, c);
+      const dheerajCentroidByName = new Map();
+      dheerajWorld.features.forEach(dheerajF => {
+        const dheerajC = dheerajGeoPath.centroid(dheerajF);
+        if (isFinite(dheerajC[0]) && isFinite(dheerajC[1])) {
+          dheerajCentroidByName.set(dheerajF.properties.name, dheerajC);
         }
       });
 
-      const filtered = missions.filter(d => centroidByName.has(d.country));
-      const missionsByCountry = d3.group(filtered, d => d.country);
-      const countryList = Array.from(missionsByCountry.keys()).sort();
+      const dheerajFiltered = dheerajMissions.filter(dheerajD => dheerajCentroidByName.has(dheerajD.country));
+      const dheerajMissionsByCountry = d3.group(dheerajFiltered, dheerajD => dheerajD.country);
+      const dheerajCountryList = Array.from(dheerajMissionsByCountry.keys()).sort();
 
-      const impactCounts = [];
-      missionsByCountry.forEach(arr =>
-        impacts.forEach(imp =>
-          impactCounts.push(arr.filter(m => m.impact === imp).length)
+      const dheerajImpactCounts = [];
+      dheerajMissionsByCountry.forEach(dheerajArr =>
+        dheerajImpacts.forEach(dheerajImp =>
+          dheerajImpactCounts.push(dheerajArr.filter(dheerajM => dheerajM.impact === dheerajImp).length)
         )
       );
 
-      const radiusScale = d3.scaleSqrt()
-        .domain([0, d3.max(impactCounts) || 1])
+      const dheerajRadiusScale = d3.scaleSqrt()
+        .domain([0, d3.max(dheerajImpactCounts) || 1])
         .range([0, 35]);
 
-      const glyphData = countryList.map(name => {
-        const [cx, cy] = centroidByName.get(name);
-        return { country: name, cx, cy, missions: missionsByCountry.get(name) };
+      const dheerajGlyphData = dheerajCountryList.map(dheerajName => {
+        const [dheerajCx, dheerajCy] = dheerajCentroidByName.get(dheerajName);
+        return { country: dheerajName, cx: dheerajCx, cy: dheerajCy, missions: dheerajMissionsByCountry.get(dheerajName) };
       });
 
-      const countryGroups = rootG.append("g")
-        .selectAll(".country-glyph")
-        .data(glyphData)
+      const dheerajCountryGroups = dheerajRootG.append("g")
+        .selectAll(".aadiss-country-glyph")
+        .data(dheerajGlyphData)
         .enter()
         .append("g")
-        .attr("class", "country-glyph")
-        .attr("transform", d => `translate(${d.cx},${d.cy})`);
+        .attr("class", "aadiss-country-glyph")
+        .attr("transform", dheerajD => `translate(${dheerajD.cx},${dheerajD.cy})`);
 
-      const angleStep = (2 * Math.PI) / impacts.length;
-      const angleCfg = new Map(impacts.map((imp, i) => {
-        const startA = -Math.PI / 2 + i * angleStep;
-        return [imp, { startA, endA: startA + angleStep * 0.8 }];
+      const dheerajAngleStep = (2 * Math.PI) / dheerajImpacts.length;
+      const dheerajAngleCfg = new Map(dheerajImpacts.map((dheerajImp, dheerajI) => {
+        const dheerajStartA = -Math.PI / 2 + dheerajI * dheerajAngleStep;
+        return [dheerajImp, { startA: dheerajStartA, endA: dheerajStartA + dheerajAngleStep * 0.8 }];
       }));
 
-      countryGroups.each(function (countryDatum) {
-        const g = d3.select(this);
-        const petalsData = impacts.map(imp => {
-          const cfg = angleCfg.get(imp);
-          const subset = countryDatum.missions.filter(m => m.impact === imp);
+      dheerajCountryGroups.each(function (dheerajCountryDatum) {
+        const dheerajG = d3.select(this);
+        const dheerajPetalsData = dheerajImpacts.map(dheerajImp => {
+          const dheerajCfg = dheerajAngleCfg.get(dheerajImp);
+          const dheerajSubset = dheerajCountryDatum.missions.filter(dheerajM => dheerajM.impact === dheerajImp);
           return {
-            country: countryDatum.country,
-            impact: imp,
+            country: dheerajCountryDatum.country,
+            impact: dheerajImp,
             innerR: 4,
-            outerR: radiusScale(subset.length),
-            startA: cfg.startA,
-            endA: cfg.endA,
-            count: subset.length,
-            totalBudget: d3.sum(subset, m => m.budget),
-            missions: subset
+            outerR: dheerajRadiusScale(dheerajSubset.length),
+            startA: dheerajCfg.startA,
+            endA: dheerajCfg.endA,
+            count: dheerajSubset.length,
+            totalBudget: d3.sum(dheerajSubset, dheerajM => dheerajM.budget),
+            missions: dheerajSubset
           };
         });
 
-        g.selectAll(".petal")
-          .data(petalsData)
+        dheerajG.selectAll(".aadiss-petal")
+          .data(dheerajPetalsData)
           .enter()
           .append("path")
-          .attr("class", "petal")
-          .attr("fill", d => impactColor(d.impact))
+          .attr("class", "aadiss-petal")
+          .attr("fill", dheerajD => dheerajImpactColor(dheerajD.impact))
           .attr("stroke", "rgba(255,255,255,0.6)")
           .attr("stroke-width", 1.2)
           .attr("fill-opacity", 0.8)
-          .attr("d", arcGen)
-          .on("mouseover", (event, d) => {
-            d3.select(event.currentTarget)
+          .attr("d", dheerajArcGen)
+          .on("mouseover", (dheerajEvent, dheerajD) => {
+            d3.select(dheerajEvent.currentTarget)
               .transition().duration(150)
               .attr("transform", "scale(1.15)")
               .attr("stroke-width", 2);
 
-            const failRate = d.missions.length
-              ? (100 - d3.mean(d.missions, m => m.success)).toFixed(1)
+            const dheerajFailRate = dheerajD.missions.length
+              ? (100 - d3.mean(dheerajD.missions, dheerajM => dheerajM.success)).toFixed(1)
               : 0;
 
-            const messages = {
+            const dheerajMessages = {
               Low: "Minimal environmental damage",
               Medium: "Significant pollution & waste",
               High: "Severe environmental destruction"
             };
 
-            tooltip
+            dheerajTooltip
               .style("opacity", 1)
-              .html(`<strong>${d.country} — Environmental Cost</strong><br>${messages[d.impact]}<br>💰 Total Waste: $${d.totalBudget.toFixed(1)}B<br>🚀 Failed Missions: ${failRate}%<br>📊 ${d.count} missions (${d.impact.toLowerCase()} impact)`)
-              .style("left", (event.pageX + 10) + "px")
-              .style("top", (event.pageY - 40) + "px");
+              .html(`<strong>${dheerajD.country} — Environmental Cost</strong><br>${dheerajMessages[dheerajD.impact]}<br>💰 Total Waste: $${dheerajD.totalBudget.toFixed(1)}B<br>🚀 Failed Missions: ${dheerajFailRate}%<br>📊 ${dheerajD.count} missions (${dheerajD.impact.toLowerCase()} impact)`)
+              .style("left", (dheerajEvent.pageX + 10) + "px")
+              .style("top", (dheerajEvent.pageY - 40) + "px");
           })
-          .on("mouseout", (event) => {
-            d3.select(event.currentTarget)
+          .on("mouseout", (dheerajEvent) => {
+            d3.select(dheerajEvent.currentTarget)
               .transition().duration(200)
               .attr("transform", "scale(1)")
               .attr("stroke-width", 1.2);
-            tooltip.style("opacity", 0);
+            dheerajTooltip.style("opacity", 0);
           });
 
-        g.datum({ country: countryDatum.country, missions: countryDatum.missions, petalsData });
+        dheerajG.datum({ country: dheerajCountryDatum.country, missions: dheerajCountryDatum.missions, petalsData: dheerajPetalsData });
       });
 
-      function updatePetals() {
-        countryGroups.selectAll(".petal")
+      function dheerajUpdatePetals() {
+        dheerajCountryGroups.selectAll(".aadiss-petal")
           .transition().duration(450)
-          .attr("d", arcGen)
-          .attr("fill-opacity", d => d.count === 0 ? 0.1 : 0.85)
-          .attr("stroke-opacity", d => (d.count === 0 ? 0.2 : 0.8));
+          .attr("d", dheerajArcGen)
+          .attr("fill-opacity", dheerajD => dheerajD.count === 0 ? 0.1 : 0.85)
+          .attr("stroke-opacity", dheerajD => (dheerajD.count === 0 ? 0.2 : 0.8));
       }
 
-      updatePetals();
+      dheerajUpdatePetals();
 
-      updateVizCallback = function (step) {
-        const actions = [
-          () => rootG.selectAll(".petal").classed("petal-pulse", true),
-          () => rootG.selectAll(".petal").classed("petal-pulse", false),
+      dheerajUpdateVizCallback = function (dheerajStep) {
+        const dheerajActions = [
+          () => dheerajRootG.selectAll(".aadiss-petal").classed("aadiss-petal-pulse", true),
+          () => dheerajRootG.selectAll(".aadiss-petal").classed("aadiss-petal-pulse", false),
           () => { },
           () => { },
-          () => rootG.selectAll(".petal").classed("petal-pulse", false)
+          () => dheerajRootG.selectAll(".aadiss-petal").classed("aadiss-petal-pulse", false)
         ];
-        if (actions[step]) actions[step]();
+        if (dheerajActions[dheerajStep]) dheerajActions[dheerajStep]();
       };
 
+    }).catch(dheerajErr => console.error("Error loading petal data:", dheerajErr));
 
-    }).catch(err => console.error("Error loading petal data:", err));
+    let dheerajCurrentStep = -1;
+    const dheerajSteps = document.querySelectorAll('.aadiss-step');
 
-    let currentStep = -1;
-    const steps = document.querySelectorAll('.step');
-
-    function updateStep(stepIndex) {
-      if (stepIndex === currentStep) return;
-      currentStep = stepIndex;
-      steps.forEach((s, i) => s.classList.toggle('active', i === stepIndex));
-      if (updateVizCallback) updateVizCallback(stepIndex);
+    function dheerajUpdateStep(dheerajStepIndex) {
+      if (dheerajStepIndex === dheerajCurrentStep) return;
+      dheerajCurrentStep = dheerajStepIndex;
+      dheerajSteps.forEach((dheerajS, dheerajI) => dheerajS.classList.toggle('aadiss-active', dheerajI === dheerajStepIndex));
+      if (dheerajUpdateVizCallback) dheerajUpdateVizCallback(dheerajStepIndex);
     }
 
-    function handleScroll() {
-      const missionsEl = document.getElementById('missions');
-      if (!missionsEl) return;
+    function dheerajHandleScroll() {
+      const dheerajMissionsEl = document.getElementById('aadiss-missions');
+      if (!dheerajMissionsEl) return;
 
-      const rect = missionsEl.getBoundingClientRect();
-      const winH = window.innerHeight;
-      if (rect.top > winH || rect.bottom < 0) { updateStep(-1); return; }
+      const dheerajRect = dheerajMissionsEl.getBoundingClientRect();
+      const dheerajWinH = window.innerHeight;
+      if (dheerajRect.top > dheerajWinH || dheerajRect.bottom < 0) { dheerajUpdateStep(-1); return; }
 
-      const progress = Math.max(0, Math.min(1, (winH - rect.top) / (winH + rect.height)));
-      updateStep(Math.min(Math.floor(progress * steps.length), steps.length - 1));
+      const dheerajProgress = Math.max(0, Math.min(1, (dheerajWinH - dheerajRect.top) / (dheerajWinH + dheerajRect.height)));
+      dheerajUpdateStep(Math.min(Math.floor(dheerajProgress * dheerajSteps.length), dheerajSteps.length - 1));
     }
 
-    window.addEventListener('scroll', handleScroll);
-    setTimeout(handleScroll, 100);
+    window.addEventListener('scroll', dheerajHandleScroll);
+    setTimeout(dheerajHandleScroll, 100);
   });
 
+  const dheerajORBIT_CSV = "space_decay.csv";
+  const dheerajLEO_MAX = 2000;
+  const dheerajMEO_MAX = 35786;
+  const dheerajCOLORS = { LEO: "#f94144", MEO: "#4d9de0", GEO: "#90be6d" };
 
-  const ORBIT_CSV = "space_decay.csv";
-  const LEO_MAX = 2000;
-  const MEO_MAX = 35786;
-  const COLORS = { LEO: "#f94144", MEO: "#4d9de0", GEO: "#90be6d" };
-
-  function getNumeric(d, keys) {
-    for (let k of keys) {
-      if (k in d && d[k] !== "") {
-        const val = Number(d[k]);
-        if (!isNaN(val)) return val;
+  function dheerajGetNumeric(dheerajD, dheerajKeys) {
+    for (let dheerajK of dheerajKeys) {
+      if (dheerajK in dheerajD && dheerajD[dheerajK] !== "") {
+        const dheerajVal = Number(dheerajD[dheerajK]);
+        if (!isNaN(dheerajVal)) return dheerajVal;
       }
     }
     return NaN;
   }
 
-  function classifyOrbit(alt) {
-    if (alt < LEO_MAX) return "LEO";
-    if (alt < MEO_MAX) return "MEO";
+  function dheerajClassifyOrbit(dheerajAlt) {
+    if (dheerajAlt < dheerajLEO_MAX) return "LEO";
+    if (dheerajAlt < dheerajMEO_MAX) return "MEO";
     return "GEO";
   }
 
-  async function loadOrbitData() {
+  async function dheerajLoadOrbitData() {
     try {
-      const csv = d3.csvParse(await fetch(ORBIT_CSV).then(r => r.text()));
-      return csv.map(d => {
-        const apogee = getNumeric(d, ["APOAPSIS", "APOAPSIS_KM", "APOAPSIS (KM)"]);
-        const perigee = getNumeric(d, ["PERIAPSIS", "PERIAPSIS_KM", "PERIAPSIS (KM)"]);
-        const sma = getNumeric(d, ["SEMIMAJOR_AXIS", "SEMIMAJOR AXIS"]);
-        let alt = 500;
-        if (Number.isFinite(apogee) && Number.isFinite(perigee)) alt = (apogee + perigee) / 2;
-        else if (Number.isFinite(apogee)) alt = apogee;
-        else if (Number.isFinite(perigee)) alt = perigee;
-        else if (Number.isFinite(sma)) alt = sma - 6371;
+      const dheerajCsv = d3.csvParse(await fetch(dheerajORBIT_CSV).then(dheerajR => dheerajR.text()));
+      return dheerajCsv.map(dheerajD => {
+        const dheerajApogee = dheerajGetNumeric(dheerajD, ["APOAPSIS", "APOAPSIS_KM", "APOAPSIS (KM)"]);
+        const dheerajPerigee = dheerajGetNumeric(dheerajD, ["PERIAPSIS", "PERIAPSIS_KM", "PERIAPSIS (KM)"]);
+        const dheerajSma = dheerajGetNumeric(dheerajD, ["SEMIMAJOR_AXIS", "SEMIMAJOR AXIS"]);
+        let dheerajAlt = 500;
+        if (Number.isFinite(dheerajApogee) && Number.isFinite(dheerajPerigee)) dheerajAlt = (dheerajApogee + dheerajPerigee) / 2;
+        else if (Number.isFinite(dheerajApogee)) dheerajAlt = dheerajApogee;
+        else if (Number.isFinite(dheerajPerigee)) dheerajAlt = dheerajPerigee;
+        else if (Number.isFinite(dheerajSma)) dheerajAlt = dheerajSma - 6371;
 
-        let raan = getNumeric(d, ["RA_OF_ASC_NODE", "RAAN"]);
-        if (!Number.isFinite(raan)) raan = Math.random() * 360;
+        let dheerajRaan = dheerajGetNumeric(dheerajD, ["RA_OF_ASC_NODE", "RAAN"]);
+        if (!Number.isFinite(dheerajRaan)) dheerajRaan = Math.random() * 360;
 
-        // Parse launch date
-        const launchDate = d.LAUNCH_DATE || "";
-        let year = null;
-        if (launchDate) {
-          const match = launchDate.match(/(\d{4})/);
-          if (match) year = parseInt(match[1]);
+        const dheerajLaunchDate = dheerajD.LAUNCH_DATE || "";
+        let dheerajYear = null;
+        if (dheerajLaunchDate) {
+          const dheerajMatch = dheerajLaunchDate.match(/(\d{4})/);
+          if (dheerajMatch) dheerajYear = parseInt(dheerajMatch[1]);
         }
 
         return {
-          alt,
-          band: classifyOrbit(alt),
-          raan,
-          name: d.OBJECT_NAME || "",
-          type: d.OBJECT_TYPE || "",
-          country: d.COUNTRY_CODE || "",
-          year: year
+          alt: dheerajAlt,
+          band: dheerajClassifyOrbit(dheerajAlt),
+          raan: dheerajRaan,
+          name: dheerajD.OBJECT_NAME || "",
+          type: dheerajD.OBJECT_TYPE || "",
+          country: dheerajD.COUNTRY_CODE || "",
+          year: dheerajYear
         };
       });
     } catch {
-      return Array.from({ length: 1000 }, (_, i) => {
-        const alt = Math.random() * 40000;
+      return Array.from({ length: 1000 }, (dheerajUndef, dheerajI) => {
+        const dheerajAlt = Math.random() * 40000;
         return {
-          alt,
-          band: classifyOrbit(alt),
+          alt: dheerajAlt,
+          band: dheerajClassifyOrbit(dheerajAlt),
           raan: Math.random() * 360,
-          name: `Debris-${i}`,
+          name: `Debris-${dheerajI}`,
           type: "Debris",
           country: "Unknown",
           year: 2000 + Math.floor(Math.random() * 26)
@@ -324,35 +317,34 @@
     }
   }
 
+  async function dheerajDrawOrbitHeatmap() {
+    const dheerajContainer = d3.select("#aadiss-viz-orbit");
+    if (dheerajContainer.empty()) return;
 
-  async function drawOrbitHeatmap() {
-    const container = d3.select("#viz-orbit");
-    if (container.empty()) return;
+    const dheerajAllData = await dheerajLoadOrbitData();
+    let dheerajCurrentPeriod = "intro";
 
-    const allData = await loadOrbitData();
-    let currentPeriod = "intro";
+    dheerajContainer.selectAll("*").remove();
 
-    container.selectAll("*").remove();
+    const dheerajW = dheerajContainer.node().clientWidth || 800;
+    const dheerajH = dheerajContainer.node().clientHeight || 600;
+    const dheerajRadius = Math.min(dheerajW, dheerajH) / 2 - 50;
 
-    const w = container.node().clientWidth || 800;
-    const h = container.node().clientHeight || 600;
-    const radius = Math.min(w, h) / 2 - 50;
+    const dheerajTooltip = dheerajContainer.append("div").attr("class", "aadiss-orbit-tooltip");
+    const dheerajSvg = dheerajContainer.append("svg").attr("width", dheerajW).attr("height", dheerajH);
+    const dheerajG = dheerajSvg.append("g").attr("transform", `translate(${dheerajW / 2},${dheerajH / 2})`);
 
-    const tooltip = container.append("div").attr("class", "orbit-tooltip");
-    const svg = container.append("svg").attr("width", w).attr("height", h);
-    const g = svg.append("g").attr("transform", `translate(${w / 2},${h / 2})`);
+    const dheerajMaxAlt = d3.max(dheerajAllData, dheerajD => dheerajD.alt) || 40000;
+    const dheerajRScale = d3.scalePow().exponent(0.6).domain([0, dheerajMaxAlt]).range([0, dheerajRadius]);
+    const dheerajAngleScale = d3.scaleLinear().domain([0, 360]).range([0, 2 * Math.PI]);
 
-    const maxAlt = d3.max(allData, d => d.alt) || 40000;
-    const rScale = d3.scalePow().exponent(0.6).domain([0, maxAlt]).range([0, radius]);
-    const angleScale = d3.scaleLinear().domain([0, 360]).range([0, 2 * Math.PI]);
+    const dheerajDefs = dheerajSvg.append("defs");
+    const dheerajGrad = dheerajDefs.append("radialGradient").attr("id", "aadiss-earth-gradient");
+    dheerajGrad.append("stop").attr("offset", "0%").attr("stop-color", "#00b4d8");
+    dheerajGrad.append("stop").attr("offset", "100%").attr("stop-color", "#03045e");
 
-    const defs = svg.append("defs");
-    const grad = defs.append("radialGradient").attr("id", "earth-gradient");
-    grad.append("stop").attr("offset", "0%").attr("stop-color", "#00b4d8");
-    grad.append("stop").attr("offset", "100%").attr("stop-color", "#03045e");
-
-    g.append("circle").attr("r", 25).attr("fill", "url(#earth-gradient)");
-    g.append("text")
+    dheerajG.append("circle").attr("r", 25).attr("fill", "url(#aadiss-earth-gradient)");
+    dheerajG.append("text")
       .attr("text-anchor", "middle")
       .attr("dy", "0.35em")
       .attr("fill", "#fff")
@@ -360,57 +352,53 @@
       .style("font-weight", "bold")
       .text("EARTH");
 
-    // Create orbital bands
-    const bands = [
-      { name: "LEO", r0: 0, r1: rScale(LEO_MAX) },
-      { name: "MEO", r0: rScale(LEO_MAX), r1: rScale(MEO_MAX) },
-      { name: "GEO", r0: rScale(MEO_MAX), r1: rScale(maxAlt) }
+    const dheerajBands = [
+      { name: "LEO", r0: 0, r1: dheerajRScale(dheerajLEO_MAX) },
+      { name: "MEO", r0: dheerajRScale(dheerajLEO_MAX), r1: dheerajRScale(dheerajMEO_MAX) },
+      { name: "GEO", r0: dheerajRScale(dheerajMEO_MAX), r1: dheerajRScale(dheerajMaxAlt) }
     ];
 
-    const arc = d3.arc().startAngle(0).endAngle(2 * Math.PI);
-    g.selectAll("path.orbit-band")
-      .data(bands)
+    const dheerajArc = d3.arc().startAngle(0).endAngle(2 * Math.PI);
+    dheerajG.selectAll("path.aadiss-orbit-band")
+      .data(dheerajBands)
       .join("path")
-      .attr("d", d => arc({ innerRadius: d.r0, outerRadius: d.r1 }))
-      .attr("fill", d =>
-        d.name === "LEO" ? "rgba(255,0,0,0.07)" :
-          d.name === "MEO" ? "rgba(0,150,255,0.05)" :
+      .attr("d", dheerajD => dheerajArc({ innerRadius: dheerajD.r0, outerRadius: dheerajD.r1 }))
+      .attr("fill", dheerajD =>
+        dheerajD.name === "LEO" ? "rgba(255,0,0,0.07)" :
+          dheerajD.name === "MEO" ? "rgba(0,150,255,0.05)" :
             "rgba(100,255,100,0.03)"
       )
       .attr("stroke", "#334");
 
-    // Band labels container
-    const labelGroup = g.append("g").attr("class", "band-labels");
+    const dheerajLabelGroup = dheerajG.append("g").attr("class", "aadiss-band-labels");
 
-    // Create debris circles
-    const debrisCircles = g.append("g").attr("class", "debris-circles");
+    const dheerajDebrisCircles = dheerajG.append("g").attr("class", "aadiss-debris-circles");
 
-    function filterDataByPeriod(period) {
-      if (period === "intro" || period === "conclusion") {
-        return allData;
+    function dheerajFilterDataByPeriod(dheerajPeriod) {
+      if (dheerajPeriod === "intro" || dheerajPeriod === "conclusion") {
+        return dheerajAllData;
       }
 
-      const periodRanges = {
+      const dheerajPeriodRanges = {
         "2000-2008": [2000, 2008],
         "2009-2016": [2009, 2016],
         "2017-2025": [2017, 2025]
       };
 
-      const [start, end] = periodRanges[period] || [0, 3000];
-      return allData.filter(d => d.year && d.year >= start && d.year <= end);
+      const [dheerajStart, dheerajEnd] = dheerajPeriodRanges[dheerajPeriod] || [0, 3000];
+      return dheerajAllData.filter(dheerajD => dheerajD.year && dheerajD.year >= dheerajStart && dheerajD.year <= dheerajEnd);
     }
 
-    function updateVisualization(period, animate = true) {
-      const data = filterDataByPeriod(period);
+    function dheerajUpdateVisualization(dheerajPeriod, dheerajAnimate = true) {
+      const dheerajData = dheerajFilterDataByPeriod(dheerajPeriod);
 
-      const counts = {
-        LEO: data.filter(d => d.band === "LEO").length,
-        MEO: data.filter(d => d.band === "MEO").length,
-        GEO: data.filter(d => d.band === "GEO").length
+      const dheerajCounts = {
+        LEO: dheerajData.filter(dheerajD => dheerajD.band === "LEO").length,
+        MEO: dheerajData.filter(dheerajD => dheerajD.band === "MEO").length,
+        GEO: dheerajData.filter(dheerajD => dheerajD.band === "GEO").length
       };
 
-      // Zoom configuration based on period
-      const zoomConfig = {
+      const dheerajZoomConfig = {
         "intro": { scale: 0.85, duration: 1000 },
         "2000-2008": { scale: 1.4, duration: 1200 },
         "2009-2016": { scale: 1.4, duration: 1200 },
@@ -418,53 +406,48 @@
         "conclusion": { scale: 0.85, duration: 1000 }
       };
 
-      const zoom = zoomConfig[period] || { scale: 1, duration: 800 };
+      const dheerajZoom = dheerajZoomConfig[dheerajPeriod] || { scale: 1, duration: 800 };
 
-      // Apply zoom transformation
-      if (animate) {
-        g.transition()
-          .duration(zoom.duration)
-          .attr("transform", `translate(${w / 2},${h / 2}) scale(${zoom.scale})`);
+      if (dheerajAnimate) {
+        dheerajG.transition()
+          .duration(dheerajZoom.duration)
+          .attr("transform", `translate(${dheerajW / 2},${dheerajH / 2}) scale(${dheerajZoom.scale})`);
       } else {
-        g.attr("transform", `translate(${w / 2},${h / 2}) scale(${zoom.scale})`);
+        dheerajG.attr("transform", `translate(${dheerajW / 2},${dheerajH / 2}) scale(${dheerajZoom.scale})`);
       }
 
-      // Update band labels
-      const labelData = [
-        { name: "LEO", r: (bands[0].r0 + bands[0].r1) / 2, count: counts.LEO, pos: "top" },
-        { name: "MEO", r: (bands[1].r0 + bands[1].r1) / 2, count: counts.MEO, pos: "right" },
-        { name: "GEO", r: (bands[2].r0 + bands[2].r1) / 2, count: counts.GEO, pos: "bottom" }
+      const dheerajLabelData = [
+        { name: "LEO", r: (dheerajBands[0].r0 + dheerajBands[0].r1) / 2, count: dheerajCounts.LEO, pos: "top" },
+        { name: "MEO", r: (dheerajBands[1].r0 + dheerajBands[1].r1) / 2, count: dheerajCounts.MEO, pos: "right" },
+        { name: "GEO", r: (dheerajBands[2].r0 + dheerajBands[2].r1) / 2, count: dheerajCounts.GEO, pos: "bottom" }
       ];
 
-      labelGroup.selectAll("text.band-label")
-        .data(labelData)
+      dheerajLabelGroup.selectAll("text.aadiss-band-label")
+        .data(dheerajLabelData)
         .join("text")
-        .attr("class", "band-label")
-        .attr("x", d => d.pos === "right" ? d.r + 15 : d.pos === "left" ? -d.r - 15 : 0)
-        .attr("y", d => d.pos === "top" ? -d.r - 15 : d.pos === "bottom" ? d.r + 25 : 5)
-        .attr("text-anchor", d => d.pos === "right" ? "start" : d.pos === "left" ? "end" : "middle")
-        .attr("fill", d => COLORS[d.name])
+        .attr("class", "aadiss-band-label")
+        .attr("x", dheerajD => dheerajD.pos === "right" ? dheerajD.r + 15 : dheerajD.pos === "left" ? -dheerajD.r - 15 : 0)
+        .attr("y", dheerajD => dheerajD.pos === "top" ? -dheerajD.r - 15 : dheerajD.pos === "bottom" ? dheerajD.r + 25 : 5)
+        .attr("text-anchor", dheerajD => dheerajD.pos === "right" ? "start" : dheerajD.pos === "left" ? "end" : "middle")
+        .attr("fill", dheerajD => dheerajCOLORS[dheerajD.name])
         .style("font-size", "14px")
         .style("font-weight", "bold")
         .transition()
-        .duration(animate ? 600 : 0)
-        .text(d => `${d.name}: ${d.count.toLocaleString()}`);
+        .duration(dheerajAnimate ? 600 : 0)
+        .text(dheerajD => `${dheerajD.name}: ${dheerajD.count.toLocaleString()}`);
 
-      // Update debris circles with better enter/exit handling
-      const circles = debrisCircles.selectAll("circle.orbit-object")
-        .data(data, (d, i) => d.name + i);
+      const dheerajCircles = dheerajDebrisCircles.selectAll("circle.aadiss-orbit-object")
+        .data(dheerajData, (dheerajD, dheerajI) => dheerajD.name + dheerajI);
 
-      // Exit old circles (debris removed from this period)
-      circles.exit()
+      dheerajCircles.exit()
         .each(function() {
-          const circle = d3.select(this);
-          const d = circle.datum();
-          if (animate) {
-            // Pulse effect before removal
-            circle
+          const dheerajCircle = d3.select(this);
+          const dheerajD = dheerajCircle.datum();
+          if (dheerajAnimate) {
+            dheerajCircle
               .transition()
               .duration(200)
-              .attr("r", (d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8) * 1.5)
+              .attr("r", (dheerajD.band === "LEO" ? 2.5 : dheerajD.band === "MEO" ? 2.0 : 1.8) * 1.5)
               .attr("fill-opacity", 0.3)
               .transition()
               .duration(400)
@@ -472,189 +455,169 @@
               .attr("fill-opacity", 0)
               .remove();
           } else {
-            circle.remove();
+            dheerajCircle.remove();
           }
         });
 
-      // Update existing circles
-      circles
+      dheerajCircles
         .transition()
-        .duration(animate ? 600 : 0)
-        .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8);
+        .duration(dheerajAnimate ? 600 : 0)
+        .attr("fill-opacity", dheerajD => dheerajD.band === "LEO" ? 1.0 : dheerajD.band === 'MEO' ? 0.9 : 0.8);
 
-      // Enter new circles (debris added in this period)
-      const entering = circles.enter()
+      const dheerajEntering = dheerajCircles.enter()
         .append("circle")
-        .attr("class", "orbit-object")
+        .attr("class", "aadiss-orbit-object")
         .attr("r", 0)
-        .attr("cx", d => {
-          const θ = angleScale(d.raan) - Math.PI / 2;
-          return rScale(d.alt) * Math.cos(θ);
+        .attr("cx", dheerajD => {
+          const dheerajΘ = dheerajAngleScale(dheerajD.raan) - Math.PI / 2;
+          return dheerajRScale(dheerajD.alt) * Math.cos(dheerajΘ);
         })
-        .attr("cy", d => {
-          const θ = angleScale(d.raan) - Math.PI / 2;
-          return rScale(d.alt) * Math.sin(θ);
+        .attr("cy", dheerajD => {
+          const dheerajΘ = dheerajAngleScale(dheerajD.raan) - Math.PI / 2;
+          return dheerajRScale(dheerajD.alt) * Math.sin(dheerajΘ);
         })
-        .attr("fill", d => COLORS[d.band])
+        .attr("fill", dheerajD => dheerajCOLORS[dheerajD.band])
         .attr("fill-opacity", 0)
-        .on("mouseover", function(event, d) {
-          const [mx, my] = d3.pointer(event, container.node());
-          tooltip
-            .style("left", (mx + 10) + "px")
-            .style("top", (my - 10) + "px")
+        .on("mouseover", function(dheerajEvent, dheerajD) {
+          const [dheerajMx, dheerajMy] = d3.pointer(dheerajEvent, dheerajContainer.node());
+          dheerajTooltip
+            .style("left", (dheerajMx + 10) + "px")
+            .style("top", (dheerajMy - 10) + "px")
             .style("opacity", 1)
-            .html(`<b>⚠️ DEBRIS THREAT</b><br/><strong>Object:</strong> ${d.name || "Untracked Fragment"}<br/><strong>Origin:</strong> ${d.country || "Unknown Mission"}<br/><strong>Year:</strong> ${d.year || "Unknown"}<br/><strong>Risk Zone:</strong> ${d.band}<br/><strong>Speed:</strong> ~17,500 mph<br/><strong>Altitude:</strong> ${Math.round(d.alt).toLocaleString()} km`);
+            .html(`<b>⚠️ DEBRIS THREAT</b><br/><strong>Object:</strong> ${dheerajD.name || "Untracked Fragment"}<br/><strong>Origin:</strong> ${dheerajD.country || "Unknown Mission"}<br/><strong>Year:</strong> ${dheerajD.year || "Unknown"}<br/><strong>Risk Zone:</strong> ${dheerajD.band}<br/><strong>Speed:</strong> ~17,500 mph<br/><strong>Altitude:</strong> ${Math.round(dheerajD.alt).toLocaleString()} km`);
         })
-        .on("mouseout", () => tooltip.style("opacity", 0));
+        .on("mouseout", () => dheerajTooltip.style("opacity", 0));
 
-      if (animate) {
-        // Stagger animation for new debris
-        entering
+      if (dheerajAnimate) {
+        dheerajEntering
           .transition()
-          .delay((_, i) => Math.min(i * 0.3, 800))
+          .delay((dheerajUndef, dheerajI) => Math.min(dheerajI * 0.3, 800))
           .duration(600)
-          .attr("r", d => d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8)
-          .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8)
+          .attr("r", dheerajD => dheerajD.band === "LEO" ? 2.5 : dheerajD.band === "MEO" ? 2.0 : 1.8)
+          .attr("fill-opacity", dheerajD => dheerajD.band === "LEO" ? 1.0 : dheerajD.band === 'MEO' ? 0.9 : 0.8)
           .transition()
           .duration(200)
-          .attr("r", d => (d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8) * 1.2)
+          .attr("r", dheerajD => (dheerajD.band === "LEO" ? 2.5 : dheerajD.band === "MEO" ? 2.0 : 1.8) * 1.2)
           .transition()
           .duration(200)
-          .attr("r", d => d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8);
+          .attr("r", dheerajD => dheerajD.band === "LEO" ? 2.5 : dheerajD.band === "MEO" ? 2.0 : 1.8);
       } else {
-        entering
-          .attr("r", d => d.band === "LEO" ? 2.5 : d.band === "MEO" ? 2.0 : 1.8)
-          .attr("fill-opacity", d => d.band === "LEO" ? 1.0 : d.band === 'MEO' ? 0.9 : 0.8);
+        dheerajEntering
+          .attr("r", dheerajD => dheerajD.band === "LEO" ? 2.5 : dheerajD.band === "MEO" ? 2.0 : 1.8)
+          .attr("fill-opacity", dheerajD => dheerajD.band === "LEO" ? 1.0 : dheerajD.band === 'MEO' ? 0.9 : 0.8);
       }
     }
 
-    // Initial render
-    updateVisualization("intro", true);
+    dheerajUpdateVisualization("intro", true);
 
-    // Scrollytelling logic
-    function setupScrollytelling() {
-      const storySteps = document.querySelectorAll('.story-step');
+    function dheerajSetupScrollytelling() {
+      const dheerajStorySteps = document.querySelectorAll('.aadiss-story-step');
 
-      if (storySteps.length === 0) {
+      if (dheerajStorySteps.length === 0) {
         console.warn('No story steps found! Scrollytelling will not work.');
         return;
       }
 
-      let currentStepIndex = -1;
+      let dheerajCurrentStepIndex = -1;
 
-      function handleScrollytellingScroll() {
-        const windowHeight = window.innerHeight;
-        let activeIndex = -1;
+      function dheerajHandleScrollytellingScroll() {
+        const dheerajWindowHeight = window.innerHeight;
+        let dheerajActiveIndex = -1;
 
-        storySteps.forEach((step, index) => {
-          const rect = step.getBoundingClientRect();
-          const stepMiddle = rect.top + rect.height / 2;
-          const isInRange = stepMiddle >= 0 && stepMiddle <= windowHeight * 0.6;
+        dheerajStorySteps.forEach((dheerajStep, dheerajIndex) => {
+          const dheerajRect = dheerajStep.getBoundingClientRect();
+          const dheerajStepMiddle = dheerajRect.top + dheerajRect.height / 2;
+          const dheerajIsInRange = dheerajStepMiddle >= 0 && dheerajStepMiddle <= dheerajWindowHeight * 0.6;
 
-          // A step is active if its middle is in the upper 60% of the viewport
-          if (isInRange) {
-            activeIndex = index;
+          if (dheerajIsInRange) {
+            dheerajActiveIndex = dheerajIndex;
           }
         });
 
-        // Update active state and visualization
-        if (activeIndex !== currentStepIndex) {
-          currentStepIndex = activeIndex;
+        if (dheerajActiveIndex !== dheerajCurrentStepIndex) {
+          dheerajCurrentStepIndex = dheerajActiveIndex;
 
-          // Update visual state of story steps
-          storySteps.forEach((step, i) => {
-            if (i === activeIndex) {
-              step.classList.add('active');
+          dheerajStorySteps.forEach((dheerajStep, dheerajI) => {
+            if (dheerajI === dheerajActiveIndex) {
+              dheerajStep.classList.add('aadiss-active');
             } else {
-              step.classList.remove('active');
+              dheerajStep.classList.remove('aadiss-active');
             }
           });
 
-          // Update visualization
-          if (activeIndex >= 0 && activeIndex < storySteps.length) {
-            const newPeriod = storySteps[activeIndex].dataset.period;
+          if (dheerajActiveIndex >= 0 && dheerajActiveIndex < dheerajStorySteps.length) {
+            const dheerajNewPeriod = dheerajStorySteps[dheerajActiveIndex].dataset.period;
 
-            if (newPeriod !== currentPeriod) {
-              currentPeriod = newPeriod;
-              updateVisualization(newPeriod, true);
+            if (dheerajNewPeriod !== dheerajCurrentPeriod) {
+              dheerajCurrentPeriod = dheerajNewPeriod;
+              dheerajUpdateVisualization(dheerajNewPeriod, true);
             }
           }
         }
       }
 
-      // Add scroll listener
-      window.addEventListener('scroll', handleScrollytellingScroll, { passive: true });
+      window.addEventListener('scroll', dheerajHandleScrollytellingScroll, { passive: true });
 
-      // Initial check
-      setTimeout(handleScrollytellingScroll, 100);
-      setTimeout(handleScrollytellingScroll, 500);
+      setTimeout(dheerajHandleScrollytellingScroll, 100);
+      setTimeout(dheerajHandleScrollytellingScroll, 500);
     }
 
-    // Setup scrollytelling after a short delay to ensure DOM is ready
-    setTimeout(setupScrollytelling, 200);
+    setTimeout(dheerajSetupScrollytelling, 200);
 
-    // Handle window resize
     window.addEventListener('resize', () => {
-      drawOrbitHeatmap();
+      dheerajDrawOrbitHeatmap();
     });
   }
 
-  // Initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(drawOrbitHeatmap, 100);
-      setupSingleDescScrollEffects();
+      setTimeout(dheerajDrawOrbitHeatmap, 100);
+      dheerajSetupSingleDescScrollEffects();
     });
   } else {
-    setTimeout(drawOrbitHeatmap, 100);
-    setupSingleDescScrollEffects();
+    setTimeout(dheerajDrawOrbitHeatmap, 100);
+    dheerajSetupSingleDescScrollEffects();
   }
 
-  // Scroll effects for single-description visualizations
-  function setupSingleDescScrollEffects() {
-    const singleContainers = document.querySelectorAll('.scrolly-container-single');
+  function dheerajSetupSingleDescScrollEffects() {
+    const dheerajSingleContainers = document.querySelectorAll('.aadiss-scrolly-container-single');
 
-    if (singleContainers.length === 0) {
+    if (dheerajSingleContainers.length === 0) {
       console.log('No single-description containers found');
       return;
     }
 
-    console.log(`✅ Found ${singleContainers.length} single-description containers`);
+    console.log(`✅ Found ${dheerajSingleContainers.length} single-description containers`);
 
-    // Track which containers have been animated
-    const animatedContainers = new Set();
+    const dheerajAnimatedContainers = new Set();
 
-    function checkVisibility() {
-      const windowHeight = window.innerHeight;
-      const triggerPoint = windowHeight * 0.75;
+    function dheerajCheckVisibility() {
+      const dheerajWindowHeight = window.innerHeight;
+      const dheerajTriggerPoint = dheerajWindowHeight * 0.75;
 
-      singleContainers.forEach(container => {
-        const rect = container.getBoundingClientRect();
-        const containerTop = rect.top;
-        const containerBottom = rect.bottom;
+      dheerajSingleContainers.forEach(dheerajContainer => {
+        const dheerajRect = dheerajContainer.getBoundingClientRect();
+        const dheerajContainerTop = dheerajRect.top;
+        const dheerajContainerBottom = dheerajRect.bottom;
 
-        // Container is in view if its top is above the trigger point and bottom is below viewport top
-        if (containerTop < triggerPoint && containerBottom > 0) {
-          const wasInView = container.classList.contains('in-view');
-          container.classList.add('in-view');
+        if (dheerajContainerTop < dheerajTriggerPoint && dheerajContainerBottom > 0) {
+          const dheerajWasInView = dheerajContainer.classList.contains('aadiss-in-view');
+          dheerajContainer.classList.add('aadiss-in-view');
 
-          // Dispatch event only the first time it comes into view
-          if (!wasInView && !animatedContainers.has(container)) {
-            animatedContainers.add(container);
-            const event = new CustomEvent('scrolly-inview', { detail: { container } });
-            container.dispatchEvent(event);
+          if (!dheerajWasInView && !dheerajAnimatedContainers.has(dheerajContainer)) {
+            dheerajAnimatedContainers.add(dheerajContainer);
+            const dheerajEvent = new CustomEvent('aadiss-scrolly-inview', { detail: { container: dheerajContainer } });
+            dheerajContainer.dispatchEvent(dheerajEvent);
           }
         } else {
-          container.classList.remove('in-view');
+          dheerajContainer.classList.remove('aadiss-in-view');
         }
       });
     }
 
-    // Add scroll listener
-    window.addEventListener('scroll', checkVisibility, { passive: true });
+    window.addEventListener('scroll', dheerajCheckVisibility, { passive: true });
 
-    // Initial check
-    setTimeout(checkVisibility, 100);
+    setTimeout(dheerajCheckVisibility, 100);
   }
 
 })();

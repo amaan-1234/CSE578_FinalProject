@@ -6,21 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PROS: Benefits of Space Exploration</title>
 
-    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
     <script src="https://unpkg.com/intersection-observer@0.12.0/intersection-observer.js"></script>
 
-    <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-    <canvas id="stars-dheeraj"></canvas>
-    <div id="tooltip" class="tooltip" style="display:none;"></div>
+    <canvas id="aadiss-stars-dheeraj"></canvas>
+    <div id="aadiss-tooltip" class="aadiss-tooltip" style="display:none;"></div>
 
     <header>
         <h1>PROS: The Benefits of Space Exploration</h1>
@@ -30,18 +28,17 @@
             Back to Home</a>
     </header>
 
-    <div class="container">
+    <div class="aadiss-container">
 
-        <!-- Abbhijit: NEOs - Bar Chart -->
-        <div class="scrolly-container-single">
-            <div class="scrolly-viz">
-                <div class="viz-section">
+        <div class="aadiss-scrolly-container-single">
+            <div class="aadiss-scrolly-viz">
+                <div class="aadiss-viz-section">
                     <div id="barChart"></div>
                 </div>
             </div>
-            <div class="scrolly-story">
-                <div class="story-step single-desc active">
-                    <div class="story-content">
+            <div class="aadiss-scrolly-story">
+                <div class="aadiss-story-step aadiss-single-desc aadiss-active">
+                    <div class="aadiss-story-content">
                         <h2>Near-Earth Objects: Hazard Classification</h2>
                         <p>This bar graph shows the amount of Near-Earth objects detected through the development of technological capability over time, from the year 2008 to 2022.</p>
                         <p>The rising bars in the graph demonstrate how our capability to detect NEOs as they approach the Earth has improved, allowing for earlier identification of NEOs which are potential threats to our planet and thus become the first step in mitigating risk to Earth.</p>
@@ -51,16 +48,15 @@
             </div>
         </div>
 
-        <!-- Abbhijit: NEOs - Scatter Plot -->
-        <div class="scrolly-container-single">
-            <div class="scrolly-viz">
-                <div class="viz-section">
+        <div class="aadiss-scrolly-container-single">
+            <div class="aadiss-scrolly-viz">
+                <div class="aadiss-viz-section">
                     <div id="scatterPlot"></div>
                 </div>
             </div>
-            <div class="scrolly-story">
-                <div class="story-step single-desc active">
-                    <div class="story-content">
+            <div class="aadiss-scrolly-story">
+                <div class="aadiss-story-step aadiss-single-desc aadiss-active">
+                    <div class="aadiss-story-content">
                         <h2>Near-Earth Objects: Size vs Distance Analysis</h2>
                         <p>This scatterplot shows the distances that asteroid flybys have been from Earth versus their brightness (magnitude).</p>
                         <p>The chart provides a comprehensive view of all the objects that have recently been flying near Earth and the varying degrees of danger they present.</p>
@@ -70,63 +66,42 @@
             </div>
         </div>
 
-        <!-- Sakshi: Streamgraph - Government vs Private Launches -->
-        <!-- Story:
-         Area Chart: Between 1957 and 2020, you can see an enormous change in how many private space launches were made compared to government space launches. The area in blue is an indication of the impact that the growth of the number of private companies has had on the space industry.
-        Narrative & Story Flow
-        Before the Visualization
-        Up until recently, space travel was only available to those who could afford it — typically governments. The arrival of private companies has had a tremendous impact on the space industry, such as dramatically reducing the cost of a launch, increasing technological innovation, and allowing for an increased frequency and level of ambition in space missions.
-        During the Visualization (Scroll Beats)
-        Scroll Beat 1 — “A Government-Led Era” (2006–2010)
-        Narration:
-        Early on in the timeframe represented in the chart, the government was the only player in this market with a few private missions at the bottom of the chart.
-        Scroll Beat 2 — “Commercial Expansion Begins” (2011–2015)
-        Narration:
-        The private sector's inception date for producing reusable rockets, small satellites, and low-cost launch systems. The private sector has historically accounted for a large portion of the total number of flights.
-        Scroll Beat 3 — “The Turning Point” (2015–2020)
-        Narration:
-        In 2015, private missions began to surpass government missions in terms of quantity for the first time. By 2020, private enterprises accounted for most launches, emphasizing how rapidly innovation has moved forward for the industry.
-        After the Visualization
-        A significant change has occurred in the area represented by the shaded blue area below — space is no longer exclusive to national space agencies, but instead open to people innovating worldwide.
-        Through the increased volume of launches due to increased competition and greater efficiencies due to reusability, private companies have lowered the cost per launch as well as reducing the time between launches.
-
--->
-        <div class="scrolly-container">
-            <div class="scrolly-viz">
-                <div id="viz-stream" style="width:100%; height:100%;"></div>
-                <div id="tooltip-stream" class="tooltip" style="display:none;"></div>
+        <div class="aadiss-scrolly-container">
+            <div class="aadiss-scrolly-viz">
+                <div id="aadiss-viz-stream" style="width:100%; height:100%;"></div>
+                <div id="aadiss-tooltip-stream" class="aadiss-tooltip" style="display:none;"></div>
             </div>
-            <div class="scrolly-story">
-                <div class="story-step" data-period="intro">
-                    <div class="story-content">
+            <div class="aadiss-scrolly-story">
+                <div class="aadiss-story-step" data-period="intro">
+                    <div class="aadiss-story-content">
                         <h2>Government vs Private (1957-2020)</h2>
                         <p><strong style="color: #4ade80;">Government</strong> (green) vs <strong style="color: #fb923c;">Private</strong> (orange) launches across 63 years. Watch the balance shift from government monopoly to commercial dominance.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-period="2006-2010">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-period="2006-2010">
+                    <div class="aadiss-story-content">
                         <h2>Government Dominance</h2>
                         <p>The <strong style="color: #4ade80;">green stream</strong> dominates—decades of government monopoly. The tiny <strong style="color: #fb923c;">orange sliver</strong> shows minimal private activity. Space required nation-state resources.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-period="2011-2015">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-period="2011-2015">
+                    <div class="aadiss-story-content">
                         <h2>Private Sector Emerges</h2>
                         <p>The <strong style="color: #fb923c;">orange stream</strong> expands dramatically. SpaceX, Rocket Lab, and others develop reusable rockets. Competition drives innovation—costs plummet, frequency increases.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-period="2016-2020">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-period="2016-2020">
+                    <div class="aadiss-story-content">
                         <h2>Historic Crossover</h2>
                         <p><strong style="color: #fb923c;">Orange dominates</strong>. Private launches outnumber government for the first time. Government agencies become customers—NASA buys from SpaceX, Pentagon contracts commercial providers.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-period="conclusion">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-period="conclusion">
+                    <div class="aadiss-story-content">
                         <h2>Democratized Space</h2>
                         <p>From <strong style="color: #4ade80;">green</strong> government monopoly to <strong style="color: #fb923c;">orange</strong> commercial industry. Lower costs through reusability, higher frequency through competition—space access democratized.</p>
                     </div>
@@ -134,31 +109,30 @@
             </div>
         </div>
 
-        <!-- Sakshi: Waffle -->
-        <div class="scrolly-container-single">
-            <div class="scrolly-viz">
-                <div class="viz-section" style="width: 100%; padding: 2rem;">
-                    <div class="viz-title" style="text-align: center; color: var(--accent-color); font-size: 1.5rem; margin-bottom: 1.5rem;">Missions by Decade</div>
-                    <div class="controls" style="margin-bottom: 1.5rem;">
-                        <div class="control-group">
+        <div class="aadiss-scrolly-container-single">
+            <div class="aadiss-scrolly-viz">
+                <div class="aadiss-viz-section" style="width: 100%; padding: 2rem;">
+                    <div class="aadiss-viz-title" style="text-align: center; color: var(--accent-color); font-size: 1.5rem; margin-bottom: 1.5rem;">Missions by Decade</div>
+                    <div class="aadiss-controls" style="margin-bottom: 1.5rem;">
+                        <div class="aadiss-control-group">
                             <label>Select Decade:</label>
-                            <select id="yearSelect-waffle">
+                            <select id="aadiss-yearSelect-waffle">
                                 <option value="all">All Decades</option>
                             </select>
                         </div>
-                        <div class="control-group">
+                        <div class="aadiss-control-group">
                             <label>Missions:</label>
-                            <strong id="currentCount-waffle">0</strong>
+                            <strong id="aadiss-currentCount-waffle">0</strong>
                         </div>
                     </div>
-                    <div id="viz-waffle"></div>
-                    <div id="legend-waffle" style="margin-top:1rem; display:flex; gap:2rem;"></div>
-                    <div id="tooltip-waffle" class="tooltip" style="display:none;"></div>
+                    <div id="aadiss-viz-waffle"></div>
+                    <div id="aadiss-legend-waffle" style="margin-top:1rem; display:flex; gap:2rem;"></div>
+                    <div id="aadiss-tooltip-waffle" class="aadiss-tooltip" style="display:none;"></div>
                 </div>
             </div>
-            <div class="scrolly-story">
-                <div class="story-step single-desc active">
-                    <div class="story-content">
+            <div class="aadiss-scrolly-story">
+                <div class="aadiss-story-step aadiss-single-desc aadiss-active">
+                    <div class="aadiss-story-content">
                         <h2>Missions by Decade: Success vs Failure</h2>
                         <p>Between the 1950's and 2020's, this Waffle Chart demonstrates the relationship between the successes and failures of space missions across different decades.</p>
                         <p><strong style="color: #4ade80;">Green squares</strong> indicate mission success. <strong style="color: #ef4444;">Red squares</strong> indicate mission failure.</p>
@@ -169,17 +143,16 @@
             </div>
         </div>
 
-        <!-- Sanyam: Chord Diagram -->
-        <div class="scrolly-container-single">
-            <div class="scrolly-viz">
-                <div class="viz-section" style="width: 100%;">
-                    <div class="viz-title" style="text-align: center; color: var(--accent-color); font-size: 1.5rem; margin-bottom: 1.5rem;">Space Ecosystem Collaboration Network</div>
-                    <div id="vis-container-1"></div>
+        <div class="aadiss-scrolly-container-single">
+            <div class="aadiss-scrolly-viz">
+                <div class="aadiss-viz-section" style="width: 100%;">
+                    <div class="aadiss-viz-title" style="text-align: center; color: var(--accent-color); font-size: 1.5rem; margin-bottom: 1.5rem;">Space Ecosystem Collaboration Network</div>
+                    <div id="aadiss-vis-container-1"></div>
                 </div>
             </div>
-            <div class="scrolly-story">
-                <div class="story-step single-desc active">
-                    <div class="story-content">
+            <div class="aadiss-scrolly-story">
+                <div class="aadiss-story-step aadiss-single-desc aadiss-active">
+                    <div class="aadiss-story-content">
                         <h2>Space Ecosystem Collaboration Network</h2>
                         <p>This interactive network portrays the global partnerships between countries that participate in various forms of space exploration.</p>
                         <p>The chord connections stretching across the diagram visualize the increasing interconnectedness of the world's ability to explore outer space together.</p>
@@ -191,56 +164,55 @@
             </div>
         </div>
 
-        <!-- Sanyam: Shield Diagram - Mission Success Rates by Decade -->
-        <div class="scrolly-container">
-            <div class="scrolly-viz">
-                <div id="vis-container-2" style="width:100%; height:100%;"></div>
+        <div class="aadiss-scrolly-container">
+            <div class="aadiss-scrolly-viz">
+                <div id="aadiss-vis-container-2" style="width:100%; height:100%;"></div>
             </div>
-            <div class="scrolly-story">
-                <div class="story-step" data-decade="intro">
-                    <div class="story-content">
+            <div class="aadiss-scrolly-story">
+                <div class="aadiss-story-step" data-decade="intro">
+                    <div class="aadiss-story-content">
                         <h2>Mission Success Shield</h2>
                         <p>Concentric rings represent decades of mission success rates, color-coded: <strong style="color: #ef4444;">red (low)</strong> to <strong style="color: #eab308;">yellow (moderate)</strong> to <strong style="color: #22c55e;">green (high)</strong>. Watch the shield strengthen as rings glow greener.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-decade="1960">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-decade="1960">
+                    <div class="aadiss-story-content">
                         <h2>Experimental Era (1960s)</h2>
                         <p>The innermost ring shows harsh reality—more failures than successes. Rockets exploded, satellites failed. Learning through trial and error where success was uncertain.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-decade="1970">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-decade="1970">
+                    <div class="aadiss-story-content">
                         <h2>Building Reliability (1970s)</h2>
                         <p>Ring glows warmer. Experience improved success rates—better quality control, redundant systems. Apollo, Skylab, Voyager missions strengthened the shield.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-decade="1990">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-decade="1990">
+                    <div class="aadiss-story-content">
                         <h2>Operational Maturity (1990s)</h2>
                         <p>Ring glows green—dramatic improvement. Space missions became remarkably reliable. Computer simulations, advanced materials, and decades of experience made success expected, not hoped for.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-decade="2010">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-decade="2010">
+                    <div class="aadiss-story-content">
                         <h2>Near-Perfect Reliability (2010s-2020s)</h2>
                         <p>Outermost ring shines brightest green—near-perfect success rates. Each decade builds on the last. The shield metaphor is literal: humanity's knowledge protects missions from past mistakes.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-decade="threats">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-decade="threats">
+                    <div class="aadiss-story-content">
                         <h2>External Threats</h2>
                         <p>Red dots outside the shield—Near-Earth Objects (asteroids/comets). Our success shield protects against human error, but cosmic hazards remain. We've mastered spaceflight technology; nature remains unpredictable.</p>
                     </div>
                 </div>
 
-                <div class="story-step" data-decade="conclusion">
-                    <div class="story-content">
+                <div class="aadiss-story-step" data-decade="conclusion">
+                    <div class="aadiss-story-content">
                         <h2>Foundation for the Future</h2>
                         <p>From uncertain yellows/oranges (1960s) to brilliant greens (2010s-2020s). A protective shield of knowledge and reliability enabling permanent space stations, lunar bases, and Mars missions.</p>
                     </div>
@@ -250,7 +222,6 @@
 
     </div>
 
-    <!-- Scripts -->
     <script src="Abbhijit_script.js?v=5"></script>
     <script src="sakshi_streamgraph.js"></script>
     <script src="sakshi_waffle.js"></script>

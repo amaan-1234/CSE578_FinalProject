@@ -1,736 +1,668 @@
 (function () {
-    // Global variables
-    let globalData = [];
-    // Unique tooltip for this visualization
-    const tooltip = d3.select('body').append('div')
-        .attr('class', 'tooltip')
-        .attr('id', 'tooltip-isha')
+    let ishaGlobalData = [];
+    const ishaTooltip = d3.select('body').append('div')
+        .attr('class', 'aadiss-tooltip')
+        .attr('id', 'aadiss-tooltip-isha')
         .style('opacity', 0);
 
-    // Load and process data
-    d3.csv('Global_Space_Exploration_Dataset.csv').then(data => {
-        console.log('Data loaded successfully!', data.length, 'rows');
-        globalData = data;
-        processData();
-        initScrollEffects();
-    }).catch(error => {
-        console.error('Error loading data:', error);
-        // alert('Error loading data file. Make sure Global_Space_Exploration_Dataset.csv is in the same folder as Isha_index.html');
+    d3.csv('Global_Space_Exploration_Dataset.csv').then(ishaData => {
+        console.log('Data loaded successfully!', ishaData.length, 'rows');
+        ishaGlobalData = ishaData;
+        ishaProcessData();
+        ishaInitScrollEffects();
+    }).catch(ishaError => {
+        console.error('Error loading data:', ishaError);
     });
 
-    // Process data for visualizations
-    function processData() {
+    function ishaProcessData() {
         console.log('Processing data...');
 
-        // Calculate success and failure counts by country
-        const countryStats = d3.rollup(
-            globalData,
-            v => ({
-                total: v.length,
-                successes: v.filter(d => +d['Success Rate (%)'] >= 70).length,
-                failures: v.filter(d => +d['Success Rate (%)'] < 70).length,
-                avgSuccessRate: d3.mean(v, d => +d['Success Rate (%)']),
-                missions: v
+        const ishaCountryStats = d3.rollup(
+            ishaGlobalData,
+            ishaV => ({
+                total: ishaV.length,
+                successes: ishaV.filter(ishaD => +ishaD['Success Rate (%)'] >= 70).length,
+                failures: ishaV.filter(ishaD => +ishaD['Success Rate (%)'] < 70).length,
+                avgSuccessRate: d3.mean(ishaV, ishaD => +ishaD['Success Rate (%)']),
+                missions: ishaV
             }),
-            d => d.Country
+            ishaD => ishaD.Country
         );
 
-        console.log('Country stats calculated:', countryStats.size, 'countries');
+        console.log('Country stats calculated:', ishaCountryStats.size, 'countries');
 
-        // Calculate failure rates by time period
-        const periodStats = calculatePeriodStats();
-        console.log('Period stats calculated:', periodStats.length, 'countries');
+        const ishaPeriodStats = ishaCalculatePeriodStats();
+        console.log('Period stats calculated:', ishaPeriodStats.length, 'countries');
 
-        // Create visualizations
-        createDivergingChart(countryStats);
-        createSlopeChart(periodStats);
+        ishaCreateDivergingChart(ishaCountryStats);
+        ishaCreateSlopeChart(ishaPeriodStats);
         console.log('Visualizations created!');
     }
 
-    // Calculate statistics by time period
-    function calculatePeriodStats() {
-        const period1 = globalData.filter(d => +d.Year >= 2000 && +d.Year <= 2012);
-        const period2 = globalData.filter(d => +d.Year >= 2013 && +d.Year <= 2025);
+    function ishaCalculatePeriodStats() {
+        const ishaPeriod1 = ishaGlobalData.filter(ishaD => +ishaD.Year >= 2000 && +ishaD.Year <= 2012);
+        const ishaPeriod2 = ishaGlobalData.filter(ishaD => +ishaD.Year >= 2013 && +ishaD.Year <= 2025);
 
-        // Get all unique countries from the data
-        const countries = [...new Set(globalData.map(d => d.Country))];
-        const stats = [];
+        const ishaCountries = [...new Set(ishaGlobalData.map(ishaD => ishaD.Country))];
+        const ishaStats = [];
 
-        countries.forEach(country => {
-            const p1Data = period1.filter(d => d.Country === country);
-            const p2Data = period2.filter(d => d.Country === country);
+        ishaCountries.forEach(ishaCountry => {
+            const ishaP1Data = ishaPeriod1.filter(ishaD => ishaD.Country === ishaCountry);
+            const ishaP2Data = ishaPeriod2.filter(ishaD => ishaD.Country === ishaCountry);
 
-            // Only include countries that have at least 10 missions in each period
-            if (p1Data.length >= 10 && p2Data.length >= 10) {
-                const p1FailureRate = (p1Data.filter(d => +d['Success Rate (%)'] < 70).length / p1Data.length) * 100;
-                const p2FailureRate = (p2Data.filter(d => +d['Success Rate (%)'] < 70).length / p2Data.length) * 100;
+            if (ishaP1Data.length >= 10 && ishaP2Data.length >= 10) {
+                const ishaP1FailureRate = (ishaP1Data.filter(ishaD => +ishaD['Success Rate (%)'] < 70).length / ishaP1Data.length) * 100;
+                const ishaP2FailureRate = (ishaP2Data.filter(ishaD => +ishaD['Success Rate (%)'] < 70).length / ishaP2Data.length) * 100;
 
-                stats.push({
-                    country: country,
-                    period1: p1FailureRate,
-                    period2: p2FailureRate,
-                    improved: p2FailureRate < p1FailureRate,
-                    p1Count: p1Data.length,
-                    p2Count: p2Data.length
+                ishaStats.push({
+                    country: ishaCountry,
+                    period1: ishaP1FailureRate,
+                    period2: ishaP2FailureRate,
+                    improved: ishaP2FailureRate < ishaP1FailureRate,
+                    p1Count: ishaP1Data.length,
+                    p2Count: ishaP2Data.length
                 });
             }
         });
 
-        console.log('Period stats for countries:', stats);
-        return stats;
+        console.log('Period stats for countries:', ishaStats);
+        return ishaStats;
     }
 
-    // Create highly interactive diverging bar chart
-    function createDivergingChart(countryStats) {
-        const container = d3.select('#diverging-chart');
-        if (container.empty()) return;
+    function ishaCreateDivergingChart(ishaCountryStats) {
+        const ishaContainer = d3.select('#aadiss-diverging-chart');
+        if (ishaContainer.empty()) return;
 
-        const margin = { top: 80, right: 60, bottom: 100, left: 140 };
-        const containerWidth = container.node().getBoundingClientRect().width || container.node().offsetWidth || 800;
-        const width = containerWidth - margin.left - margin.right;
-        const height = 600 - margin.top - margin.bottom;
+        const ishaMargin = { top: 80, right: 60, bottom: 100, left: 140 };
+        const ishaContainerWidth = ishaContainer.node().getBoundingClientRect().width || ishaContainer.node().offsetWidth || 800;
+        const ishaWidth = ishaContainerWidth - ishaMargin.left - ishaMargin.right;
+        const ishaHeight = 600 - ishaMargin.top - ishaMargin.bottom;
 
-        const svg = container.append('svg')
-            .attr('width', width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom)
+        const ishaSvg = ishaContainer.append('svg')
+            .attr('width', ishaWidth + ishaMargin.left + ishaMargin.right)
+            .attr('height', ishaHeight + ishaMargin.top + ishaMargin.bottom)
             .append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
+            .attr('transform', `translate(${ishaMargin.left},${ishaMargin.top})`);
 
-        // Prepare data
-        const data = Array.from(countryStats, ([country, stats]) => ({
-            country,
-            successes: stats.successes,
-            failures: stats.failures,
-            total: stats.total,
-            avgSuccessRate: stats.avgSuccessRate,
-            missions: stats.missions
-        })).sort((a, b) => (b.successes + b.failures) - (a.successes + a.failures));
+        const ishaData = Array.from(ishaCountryStats, ([ishaCountry, ishaStats]) => ({
+            country: ishaCountry,
+            successes: ishaStats.successes,
+            failures: ishaStats.failures,
+            total: ishaStats.total,
+            avgSuccessRate: ishaStats.avgSuccessRate,
+            missions: ishaStats.missions
+        })).sort((ishaA, ishaB) => (ishaB.successes + ishaB.failures) - (ishaA.successes + ishaA.failures));
 
-        // Scales
-        const maxValue = d3.max(data, d => Math.max(d.successes, d.failures));
-        const x = d3.scaleLinear()
-            .domain([-maxValue * 1.1, maxValue * 1.1])
-            .range([0, width]);
+        const ishaMaxValue = d3.max(ishaData, ishaD => Math.max(ishaD.successes, ishaD.failures));
+        const ishaX = d3.scaleLinear().domain([-ishaMaxValue * 1.1, ishaMaxValue * 1.1]).range([0, ishaWidth]);
+        const ishaY = d3.scaleBand().domain(ishaData.map(ishaD => ishaD.country)).range([0, ishaHeight]).padding(0.3);
 
-        const y = d3.scaleBand()
-            .domain(data.map(d => d.country))
-            .range([0, height])
-            .padding(0.3);
-
-        // Add title
-        svg.append('text')
-            .attr('class', 'chart-title')
-            .attr('x', width / 2)
+        ishaSvg.append('text')
+            .attr('class', 'aadiss-chart-title')
+            .attr('x', ishaWidth / 2)
             .attr('y', -45)
             .attr('text-anchor', 'middle')
             .text('Diverging Chart - Success vs Failure of Space Missions by Country');
 
-        // Add grid lines
-        const gridLines = svg.append('g').attr('class', 'grid');
+        const ishaGridLines = ishaSvg.append('g').attr('class', 'aadiss-grid');
 
-        x.ticks(10).forEach(tick => {
-            gridLines.append('line')
-                .attr('x1', x(tick))
-                .attr('x2', x(tick))
+        ishaX.ticks(10).forEach(ishaTick => {
+            ishaGridLines.append('line')
+                .attr('x1', ishaX(ishaTick))
+                .attr('x2', ishaX(ishaTick))
                 .attr('y1', 0)
-                .attr('y2', height);
+                .attr('y2', ishaHeight);
         });
 
-        // Add center line
-        svg.append('line')
-            .attr('class', 'center-line')
-            .attr('x1', x(0))
-            .attr('x2', x(0))
+        ishaSvg.append('line')
+            .attr('class', 'aadiss-center-line')
+            .attr('x1', ishaX(0))
+            .attr('x2', ishaX(0))
             .attr('y1', 0)
-            .attr('y2', height);
+            .attr('y2', ishaHeight);
 
-        // Create bar groups for interactivity
-        const barGroups = svg.append('g');
+        const ishaBarGroups = ishaSvg.append('g');
 
-        // Add failure bars (left side) with click interaction
-        const failureBars = barGroups.selectAll('.failure-bar')
-            .data(data)
+        const ishaFailureBars = ishaBarGroups.selectAll('.aadiss-failure-bar')
+            .data(ishaData)
             .join('rect')
-            .attr('class', 'bar failure-bar')
-            .attr('x', x(0))
-            .attr('y', d => y(d.country))
+            .attr('class', 'aadiss-bar aadiss-failure-bar')
+            .attr('x', ishaX(0))
+            .attr('y', ishaD => ishaY(ishaD.country))
             .attr('width', 0)
-            .attr('height', y.bandwidth())
-            .on('mouseover', function (event, d) {
-                d3.select(this).classed('highlight', true);
-                showTooltip(event, `
-                    <strong>${d.country}</strong><br/>
-                    Failures: ${d.failures} missions<br/>
-                    Failure Rate: ${((d.failures / d.total) * 100).toFixed(1)}%
+            .attr('height', ishaY.bandwidth())
+            .on('mouseover', function (ishaEvent, ishaD) {
+                d3.select(this).classed('aadiss-highlight', true);
+                ishaShowTooltip(ishaEvent, `
+                    <strong>${ishaD.country}</strong><br/>
+                    Failures: ${ishaD.failures} missions<br/>
+                    Failure Rate: ${((ishaD.failures / ishaD.total) * 100).toFixed(1)}%
                 `);
-                // Dim other bars
-                barGroups.selectAll('.bar').classed('dimmed', true);
-                d3.select(this).classed('dimmed', false);
+                ishaBarGroups.selectAll('.aadiss-bar').classed('aadiss-dimmed', true);
+                d3.select(this).classed('aadiss-dimmed', false);
             })
             .on('mouseout', function () {
-                d3.select(this).classed('highlight', false);
-                hideTooltip();
-                barGroups.selectAll('.bar').classed('dimmed', false);
+                d3.select(this).classed('aadiss-highlight', false);
+                ishaHideTooltip();
+                ishaBarGroups.selectAll('.aadiss-bar').classed('aadiss-dimmed', false);
             })
-            .on('click', function (event, d) {
-                showMissionDetails(d, 'failure');
+            .on('click', function (ishaEvent, ishaD) {
+                ishaShowMissionDetails(ishaD, 'failure');
             });
 
-        // Add success bars (right side) with click interaction
-        const successBars = barGroups.selectAll('.success-bar')
-            .data(data)
+        const ishaSuccessBars = ishaBarGroups.selectAll('.aadiss-success-bar')
+            .data(ishaData)
             .join('rect')
-            .attr('class', 'bar success-bar')
-            .attr('x', x(0))
-            .attr('y', d => y(d.country))
+            .attr('class', 'aadiss-bar aadiss-success-bar')
+            .attr('x', ishaX(0))
+            .attr('y', ishaD => ishaY(ishaD.country))
             .attr('width', 0)
-            .attr('height', y.bandwidth())
-            .on('mouseover', function (event, d) {
-                d3.select(this).classed('highlight', true);
-                showTooltip(event, `
-                    <strong>${d.country}</strong><br/>
-                    Successes: ${d.successes} missions<br/>
-                    Success Rate: ${((d.successes / d.total) * 100).toFixed(1)}%
+            .attr('height', ishaY.bandwidth())
+            .on('mouseover', function (ishaEvent, ishaD) {
+                d3.select(this).classed('aadiss-highlight', true);
+                ishaShowTooltip(ishaEvent, `
+                    <strong>${ishaD.country}</strong><br/>
+                    Successes: ${ishaD.successes} missions<br/>
+                    Success Rate: ${((ishaD.successes / ishaD.total) * 100).toFixed(1)}%
                 `);
-                // Dim other bars
-                barGroups.selectAll('.bar').classed('dimmed', true);
-                d3.select(this).classed('dimmed', false);
+                ishaBarGroups.selectAll('.aadiss-bar').classed('aadiss-dimmed', true);
+                d3.select(this).classed('aadiss-dimmed', false);
             })
             .on('mouseout', function () {
-                d3.select(this).classed('highlight', false);
-                hideTooltip();
-                barGroups.selectAll('.bar').classed('dimmed', false);
+                d3.select(this).classed('aadiss-highlight', false);
+                ishaHideTooltip();
+                ishaBarGroups.selectAll('.aadiss-bar').classed('aadiss-dimmed', false);
             })
-            .on('click', function (event, d) {
-                showMissionDetails(d, 'success');
+            .on('click', function (ishaEvent, ishaD) {
+                ishaShowMissionDetails(ishaD, 'success');
             });
 
-        // Add axes
-        const xAxis = d3.axisBottom(x)
-            .tickFormat(d => Math.abs(d))
+        const ishaXAxis = d3.axisBottom(ishaX)
+            .tickFormat(ishaD => Math.abs(ishaD))
             .ticks(10);
 
-        svg.append('g')
-            .attr('class', 'axis')
-            .attr('transform', `translate(0,${height})`)
-            .call(xAxis);
+        ishaSvg.append('g')
+            .attr('class', 'aadiss-axis')
+            .attr('transform', `translate(0,${ishaHeight})`)
+            .call(ishaXAxis);
 
-        const yAxis = d3.axisLeft(y);
+        const ishaYAxis = d3.axisLeft(ishaY);
 
-        svg.append('g')
-            .attr('class', 'axis')
-            .attr('transform', `translate(${x(0)},0)`)
-            .call(yAxis)
+        ishaSvg.append('g')
+            .attr('class', 'aadiss-axis')
+            .attr('transform', `translate(${ishaX(0)},0)`)
+            .call(ishaYAxis)
             .selectAll('text')
             .style('font-size', '14px')
             .style('font-weight', '600');
 
-        // Add x-axis label
-        svg.append('text')
-            .attr('class', 'axis-label')
-            .attr('x', width / 2)
-            .attr('y', height + 55)
+        ishaSvg.append('text')
+            .attr('class', 'aadiss-axis-label')
+            .attr('x', ishaWidth / 2)
+            .attr('y', ishaHeight + 55)
             .attr('text-anchor', 'middle')
             .text('Number of Missions');
 
-        // Add section labels
-        svg.append('text')
-            .attr('class', 'axis-label')
-            .attr('x', x(-maxValue * 0.55))
+        ishaSvg.append('text')
+            .attr('class', 'aadiss-axis-label')
+            .attr('x', ishaX(-ishaMaxValue * 0.55))
             .attr('y', -20)
             .attr('text-anchor', 'middle')
             .attr('fill', '#dc3545')
             .text('← Failures');
 
-        svg.append('text')
-            .attr('class', 'axis-label')
-            .attr('x', x(maxValue * 0.55))
+        ishaSvg.append('text')
+            .attr('class', 'aadiss-axis-label')
+            .attr('x', ishaX(ishaMaxValue * 0.55))
             .attr('y', -20)
             .attr('text-anchor', 'middle')
             .attr('fill', '#28a745')
             .text('Successes →');
 
-        // Add legend at the bottom center
-        const legend = svg.append('g')
-            .attr('class', 'legend')
-            .attr('transform', `translate(${width / 2 - 250}, ${height + 65})`);
+        const ishaLegend = ishaSvg.append('g')
+            .attr('class', 'aadiss-legend')
+            .attr('transform', `translate(${ishaWidth / 2 - 250}, ${ishaHeight + 65})`);
 
-        const legendData = [
+        const ishaLegendData = [
             { label: 'Failures (Success Rate < 70%)', color: '#dc3545' },
             { label: 'Successes (Success Rate ≥ 70%)', color: '#28a745' }
         ];
 
-        legendData.forEach((item, i) => {
-            const legendItem = legend.append('g')
-                .attr('class', 'legend-item')
-                .attr('transform', `translate(${i * 280}, 0)`);
+        ishaLegendData.forEach((ishaItem, ishaI) => {
+            const ishaLegendItem = ishaLegend.append('g')
+                .attr('class', 'aadiss-legend-item')
+                .attr('transform', `translate(${ishaI * 280}, 0)`);
 
-            legendItem.append('rect')
+            ishaLegendItem.append('rect')
                 .attr('width', 22)
                 .attr('height', 22)
-                .attr('fill', item.color);
+                .attr('fill', ishaItem.color);
 
-            legendItem.append('text')
-                .attr('class', 'legend-text')
+            ishaLegendItem.append('text')
+                .attr('class', 'aadiss-legend-text')
                 .attr('x', 30)
                 .attr('y', 16)
-                .text(item.label);
+                .text(ishaItem.label);
         });
 
-        // Animate bars on scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Animate failure bars
-                    failureBars.transition()
+        const ishaObserver = new IntersectionObserver((ishaEntries) => {
+            ishaEntries.forEach(ishaEntry => {
+                if (ishaEntry.isIntersecting) {
+                    ishaFailureBars.transition()
                         .duration(1200)
-                        .delay((d, i) => i * 120)
+                        .delay((ishaD, ishaI) => ishaI * 120)
                         .ease(d3.easeCubicOut)
-                        .attr('x', d => x(-d.failures))
-                        .attr('width', d => x(0) - x(-d.failures));
+                        .attr('x', ishaD => ishaX(-ishaD.failures))
+                        .attr('width', ishaD => ishaX(0) - ishaX(-ishaD.failures));
 
-                    // Animate success bars
-                    successBars.transition()
+                    ishaSuccessBars.transition()
                         .duration(1200)
-                        .delay((d, i) => i * 120)
+                        .delay((ishaD, ishaI) => ishaI * 120)
                         .ease(d3.easeCubicOut)
-                        .attr('width', d => x(d.successes) - x(0));
+                        .attr('width', ishaD => ishaX(ishaD.successes) - ishaX(0));
 
-                    observer.unobserve(entry.target);
+                    ishaObserver.unobserve(ishaEntry.target);
                 }
             });
         }, { threshold: 0.3 });
 
-        const section = document.getElementById('viz1-section');
-        if (section) observer.observe(section);
+        const ishaSection = document.getElementById('aadiss-viz1-section');
+        if (ishaSection) ishaObserver.observe(ishaSection);
     }
 
-    // Create highly interactive slope chart
-    function createSlopeChart(data) {
-        const container = d3.select('#slope-chart');
-        if (container.empty()) return;
+    function ishaCreateSlopeChart(ishaData) {
+        const ishaContainer = d3.select('#aadiss-slope-chart');
+        if (ishaContainer.empty()) return;
 
-        const margin = { top: 80, right: 200, bottom: 80, left: 180 };
-        const containerWidth = container.node().getBoundingClientRect().width || container.node().offsetWidth || 800;
-        const width = containerWidth - margin.left - margin.right;
-        const height = 800 - margin.top - margin.bottom;
+        const ishaMargin = { top: 80, right: 200, bottom: 80, left: 180 };
+        const ishaContainerWidth = ishaContainer.node().getBoundingClientRect().width || ishaContainer.node().offsetWidth || 800;
+        const ishaWidth = ishaContainerWidth - ishaMargin.left - ishaMargin.right;
+        const ishaHeight = 800 - ishaMargin.top - ishaMargin.bottom;
 
-        const svg = container.append('svg')
-            .attr('width', width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom)
+        const ishaSvg = ishaContainer.append('svg')
+            .attr('width', ishaWidth + ishaMargin.left + ishaMargin.right)
+            .attr('height', ishaHeight + ishaMargin.top + ishaMargin.bottom)
             .append('g')
-            .attr('transform', `translate(${margin.left},${margin.top})`);
+            .attr('transform', `translate(${ishaMargin.left},${ishaMargin.top})`);
 
-        // Sort data by period1 to reduce overlap
-        data.sort((a, b) => b.period1 - a.period1);
+        ishaData.sort((ishaA, ishaB) => ishaB.period1 - ishaA.period1);
 
-        // Scales
-        const x = d3.scalePoint()
+        const ishaX = d3.scalePoint()
             .domain(['2000-2012', '2013-2025'])
-            .range([0, width])
+            .range([0, ishaWidth])
             .padding(0.5);
 
-        const allRates = data.flatMap(d => [d.period1, d.period2]);
-        const minRate = Math.floor(d3.min(allRates) - 5);
-        const maxRate = Math.ceil(d3.max(allRates) + 5);
+        const ishaAllRates = ishaData.flatMap(ishaD => [ishaD.period1, ishaD.period2]);
+        const ishaMinRate = Math.floor(d3.min(ishaAllRates) - 5);
+        const ishaMaxRate = Math.ceil(d3.max(ishaAllRates) + 5);
 
-        const y = d3.scaleLinear()
-            .domain([minRate, maxRate])
-            .range([height, 0]);
+        const ishaY = d3.scaleLinear()
+            .domain([ishaMinRate, ishaMaxRate])
+            .range([ishaHeight, 0]);
 
-        // Add title
-        svg.append('text')
-            .attr('class', 'chart-title')
-            .attr('x', width / 2)
+        ishaSvg.append('text')
+            .attr('class', 'aadiss-chart-title')
+            .attr('x', ishaWidth / 2)
             .attr('y', -45)
             .attr('text-anchor', 'middle')
             .text('Mission Failure Rate Shift by Country');
 
-        svg.append('text')
-            .attr('class', 'chart-subtitle')
-            .attr('x', width / 2)
+        ishaSvg.append('text')
+            .attr('class', 'aadiss-chart-subtitle')
+            .attr('x', ishaWidth / 2)
             .attr('y', -25)
             .attr('text-anchor', 'middle')
             .text('Green = Improved | Red = Worsened');
 
-        // Add grid lines
-        svg.append('g')
-            .attr('class', 'grid')
+        ishaSvg.append('g')
+            .attr('class', 'aadiss-grid')
             .selectAll('line')
-            .data(y.ticks(8))
+            .data(ishaY.ticks(8))
             .join('line')
             .attr('x1', 0)
-            .attr('x2', width)
-            .attr('y1', d => y(d))
-            .attr('y2', d => y(d));
+            .attr('x2', ishaWidth)
+            .attr('y1', ishaD => ishaY(ishaD))
+            .attr('y2', ishaD => ishaY(ishaD));
 
-        // Add axes
-        svg.append('g')
-            .attr('class', 'axis')
-            .attr('transform', `translate(0,${height})`)
-            .call(d3.axisBottom(x))
+        ishaSvg.append('g')
+            .attr('class', 'aadiss-axis')
+            .attr('transform', `translate(0,${ishaHeight})`)
+            .call(d3.axisBottom(ishaX))
             .selectAll('text')
-            .attr('class', 'period-label');
+            .attr('class', 'aadiss-period-label');
 
-        svg.append('g')
-            .attr('class', 'axis')
-            .call(d3.axisLeft(y).tickFormat(d => d + '%'));
+        ishaSvg.append('g')
+            .attr('class', 'aadiss-axis')
+            .call(d3.axisLeft(ishaY).tickFormat(ishaD => ishaD + '%'));
 
-        // Add y-axis label
-        svg.append('text')
-            .attr('class', 'axis-label')
+        ishaSvg.append('text')
+            .attr('class', 'aadiss-axis-label')
             .attr('transform', 'rotate(-90)')
-            .attr('x', -height / 2)
+            .attr('x', -ishaHeight / 2)
             .attr('y', -70)
             .attr('text-anchor', 'middle')
             .text('Failure Rate (%)');
 
-        // Create line generator
-        const line = d3.line()
-            .x((d, i) => x(i === 0 ? '2000-2012' : '2013-2025'))
-            .y(d => y(d));
+        const ishaLine = d3.line()
+            .x((ishaD, ishaI) => ishaX(ishaI === 0 ? '2000-2012' : '2013-2025'))
+            .y(ishaD => ishaY(ishaD));
 
-        // Add lines with enhanced interactivity
-        const lines = svg.selectAll('.slope-line')
-            .data(data)
+        const ishaLines = ishaSvg.selectAll('.aadiss-slope-line')
+            .data(ishaData)
             .join('path')
-            .attr('class', d => `slope-line ${d.improved ? 'improved' : 'worsened'}`)
-            .attr('d', d => line([d.period1, d.period1]))
+            .attr('class', ishaD => `aadiss-slope-line ${ishaD.improved ? 'aadiss-improved' : 'aadiss-worsened'}`)
+            .attr('d', ishaD => ishaLine([ishaD.period1, ishaD.period1]))
             .style('opacity', 0.4)
-            .on('mouseover', function (event, d) {
-                // Highlight this line
+            .on('mouseover', function (ishaEvent, ishaD) {
                 d3.select(this)
                     .raise()
                     .style('opacity', 1)
                     .style('stroke-width', '5px');
 
-                // Dim all other elements
-                svg.selectAll('.slope-line').style('opacity', 0.15);
-                svg.selectAll('.slope-point').style('opacity', 0.15);
-                svg.selectAll('.country-label').style('opacity', 0.2);
-                svg.selectAll('.value-label').style('opacity', 0.2);
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.15);
+                ishaSvg.selectAll('.aadiss-slope-point').style('opacity', 0.15);
+                ishaSvg.selectAll('.aadiss-country-label').style('opacity', 0.2);
+                ishaSvg.selectAll('.aadiss-value-label').style('opacity', 0.2);
 
-                // Highlight related elements
                 d3.select(this).style('opacity', 1);
-                svg.selectAll(`.point-${d.country.replace(/\s/g, '-')}`).style('opacity', 1);
-                svg.selectAll(`.label-${d.country.replace(/\s/g, '-')}`).style('opacity', 1);
+                ishaSvg.selectAll(`.aadiss-point-${ishaD.country.replace(/\s/g, '-')}`).style('opacity', 1);
+                ishaSvg.selectAll(`.aadiss-label-${ishaD.country.replace(/\s/g, '-')}`).style('opacity', 1);
 
-                showTooltip(event, `
-                    <strong>${d.country}</strong><br/>
-                    2000-2012: ${d.period1.toFixed(1)}% (${d.p1Count} missions)<br/>
-                    2013-2025: ${d.period2.toFixed(1)}% (${d.p2Count} missions)<br/>
-                    <strong>Change: ${d.improved ? '↓' : '↑'} ${Math.abs(d.period2 - d.period1).toFixed(1)}%</strong>
+                ishaShowTooltip(ishaEvent, `
+                    <strong>${ishaD.country}</strong><br/>
+                    2000-2012: ${ishaD.period1.toFixed(1)}% (${ishaD.p1Count} missions)<br/>
+                    2013-2025: ${ishaD.period2.toFixed(1)}% (${ishaD.p2Count} missions)<br/>
+                    <strong>Change: ${ishaD.improved ? '↓' : '↑'} ${Math.abs(ishaD.period2 - ishaD.period1).toFixed(1)}%</strong>
                 `);
             })
             .on('mouseout', function () {
                 d3.select(this).style('stroke-width', '3px');
-                svg.selectAll('.slope-line').style('opacity', 0.4);
-                svg.selectAll('.slope-point').style('opacity', 1);
-                svg.selectAll('.country-label').style('opacity', 1);
-                svg.selectAll('.value-label').style('opacity', 1);
-                hideTooltip();
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.4);
+                ishaSvg.selectAll('.aadiss-slope-point').style('opacity', 1);
+                ishaSvg.selectAll('.aadiss-country-label').style('opacity', 1);
+                ishaSvg.selectAll('.aadiss-value-label').style('opacity', 1);
+                ishaHideTooltip();
             })
-            .on('click', function (event, d) {
-                const change = d.period2 - d.period1;
-                const direction = d.improved ? 'IMPROVED' : 'WORSENED';
-                alert(`${d.country} - Detailed Analysis\n\n` +
-                    `Status: ${direction}\n\n` +
+            .on('click', function (ishaEvent, ishaD) {
+                const ishaChange = ishaD.period2 - ishaD.period1;
+                const ishaDirection = ishaD.improved ? 'IMPROVED' : 'WORSENED';
+                alert(`${ishaD.country} - Detailed Analysis\n\n` +
+                    `Status: ${ishaDirection}\n\n` +
                     `2000-2012:\n` +
-                    `  • Failure Rate: ${d.period1.toFixed(1)}%\n` +
-                    `  • Total Missions: ${d.p1Count}\n\n` +
+                    `  • Failure Rate: ${ishaD.period1.toFixed(1)}%\n` +
+                    `  • Total Missions: ${ishaD.p1Count}\n\n` +
                     `2013-2025:\n` +
-                    `  • Failure Rate: ${d.period2.toFixed(1)}%\n` +
-                    `  • Total Missions: ${d.p2Count}\n\n` +
-                    `Change: ${change > 0 ? '+' : ''}${change.toFixed(1)}%`);
+                    `  • Failure Rate: ${ishaD.period2.toFixed(1)}%\n` +
+                    `  • Total Missions: ${ishaD.p2Count}\n\n` +
+                    `Change: ${ishaChange > 0 ? '+' : ''}${ishaChange.toFixed(1)}%`);
             });
 
-        // Add points
-        const points = svg.selectAll('.point-group')
-            .data(data)
+        const ishaPoints = ishaSvg.selectAll('.aadiss-point-group')
+            .data(ishaData)
             .join('g')
-            .attr('class', 'point-group');
+            .attr('class', 'aadiss-point-group');
 
-        // Period 1 points
-        points.append('circle')
-            .attr('class', d => `slope-point point-${d.country.replace(/\s/g, '-')}`)
-            .attr('cx', x('2000-2012'))
-            .attr('cy', d => y(d.period1))
+        ishaPoints.append('circle')
+            .attr('class', ishaD => `aadiss-slope-point aadiss-point-${ishaD.country.replace(/\s/g, '-')}`)
+            .attr('cx', ishaX('2000-2012'))
+            .attr('cy', ishaD => ishaY(ishaD.period1))
             .attr('r', 7)
-            .attr('fill', d => d.improved ? '#28a745' : '#dc3545')
+            .attr('fill', ishaD => ishaD.improved ? '#28a745' : '#dc3545')
             .attr('stroke', 'white')
             .attr('stroke-width', 2.5)
             .attr('opacity', 0)
             .style('cursor', 'pointer')
-            .on('mouseover', function (event, d) {
+            .on('mouseover', function (ishaEvent, ishaD) {
                 d3.select(this).attr('r', 10);
-                svg.selectAll('.slope-line').style('opacity', 0.15);
-                svg.selectAll(`.slope-line`).filter(ld => ld.country === d.country).style('opacity', 1).raise();
-                showTooltip(event, `
-                    <strong>${d.country} (2000-2012)</strong><br/>
-                    Failure Rate: ${d.period1.toFixed(1)}%<br/>
-                    Total Missions: ${d.p1Count}
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.15);
+                ishaSvg.selectAll(`.aadiss-slope-line`).filter(ishaLd => ishaLd.country === ishaD.country).style('opacity', 1).raise();
+                ishaShowTooltip(ishaEvent, `
+                    <strong>${ishaD.country} (2000-2012)</strong><br/>
+                    Failure Rate: ${ishaD.period1.toFixed(1)}%<br/>
+                    Total Missions: ${ishaD.p1Count}
                 `);
             })
             .on('mouseout', function () {
                 d3.select(this).attr('r', 7);
-                svg.selectAll('.slope-line').style('opacity', 0.4);
-                hideTooltip();
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.4);
+                ishaHideTooltip();
             });
 
-        // Period 2 points
-        points.append('circle')
-            .attr('class', d => `slope-point point-${d.country.replace(/\s/g, '-')}`)
-            .attr('cx', x('2013-2025'))
-            .attr('cy', d => y(d.period1))
+        ishaPoints.append('circle')
+            .attr('class', ishaD => `aadiss-slope-point aadiss-point-${ishaD.country.replace(/\s/g, '-')}`)
+            .attr('cx', ishaX('2013-2025'))
+            .attr('cy', ishaD => ishaY(ishaD.period1))
             .attr('r', 7)
-            .attr('fill', d => d.improved ? '#28a745' : '#dc3545')
+            .attr('fill', ishaD => ishaD.improved ? '#28a745' : '#dc3545')
             .attr('stroke', 'white')
             .attr('stroke-width', 2.5)
             .attr('opacity', 0)
             .style('cursor', 'pointer')
-            .on('mouseover', function (event, d) {
+            .on('mouseover', function (ishaEvent, ishaD) {
                 d3.select(this).attr('r', 10);
-                svg.selectAll('.slope-line').style('opacity', 0.15);
-                svg.selectAll(`.slope-line`).filter(ld => ld.country === d.country).style('opacity', 1).raise();
-                showTooltip(event, `
-                    <strong>${d.country} (2013-2025)</strong><br/>
-                    Failure Rate: ${d.period2.toFixed(1)}%<br/>
-                    Total Missions: ${d.p2Count}
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.15);
+                ishaSvg.selectAll(`.aadiss-slope-line`).filter(ishaLd => ishaLd.country === ishaD.country).style('opacity', 1).raise();
+                ishaShowTooltip(ishaEvent, `
+                    <strong>${ishaD.country} (2013-2025)</strong><br/>
+                    Failure Rate: ${ishaD.period2.toFixed(1)}%<br/>
+                    Total Missions: ${ishaD.p2Count}
                 `);
             })
             .on('mouseout', function () {
                 d3.select(this).attr('r', 7);
-                svg.selectAll('.slope-line').style('opacity', 0.4);
-                hideTooltip();
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.4);
+                ishaHideTooltip();
             });
 
-        // Add country labels (left side) - Only country names
-        const leftLabels = svg.selectAll('.left-label')
-            .data(data)
+        const ishaLeftLabels = ishaSvg.selectAll('.aadiss-left-label')
+            .data(ishaData)
             .join('text')
-            .attr('class', d => `country-label label-${d.country.replace(/\s/g, '-')}`)
-            .attr('x', x('2000-2012') - 15)
-            .attr('y', d => y(d.period1))
+            .attr('class', ishaD => `aadiss-country-label aadiss-label-${ishaD.country.replace(/\s/g, '-')}`)
+            .attr('x', ishaX('2000-2012') - 15)
+            .attr('y', ishaD => ishaY(ishaD.period1))
             .attr('text-anchor', 'end')
             .attr('dy', '0.35em')
             .attr('opacity', 0)
-            .text(d => `${d.country}`)
+            .text(ishaD => `${ishaD.country}`)
             .style('cursor', 'pointer')
-            .on('mouseover', function (event, d) {
+            .on('mouseover', function (ishaEvent, ishaD) {
                 d3.select(this).style('font-weight', 'bold').style('font-size', '15px');
-                svg.selectAll('.slope-line').style('opacity', 0.15);
-                svg.selectAll(`.slope-line`).filter(ld => ld.country === d.country).style('opacity', 1).raise();
-                showTooltip(event, `Click to see ${d.country} details`);
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.15);
+                ishaSvg.selectAll(`.aadiss-slope-line`).filter(ishaLd => ishaLd.country === ishaD.country).style('opacity', 1).raise();
+                ishaShowTooltip(ishaEvent, `Click to see ${ishaD.country} details`);
             })
             .on('mouseout', function () {
                 d3.select(this).style('font-weight', '600').style('font-size', '14px');
-                svg.selectAll('.slope-line').style('opacity', 0.4);
-                hideTooltip();
+                ishaSvg.selectAll('.aadiss-slope-line').style('opacity', 0.4);
+                ishaHideTooltip();
             })
-            .on('click', function (event, d) {
-                svg.selectAll(`.slope-line`).filter(ld => ld.country === d.country).dispatch('click');
+            .on('click', function (ishaEvent, ishaD) {
+                ishaSvg.selectAll(`.aadiss-slope-line`).filter(ishaLd => ishaLd.country === ishaD.country).dispatch('click');
             });
 
-        // Add percentage labels on left
-        const leftPercentLabels = svg.selectAll('.left-percent-label')
-            .data(data)
+        const ishaLeftPercentLabels = ishaSvg.selectAll('.aadiss-left-percent-label')
+            .data(ishaData)
             .join('text')
-            .attr('class', d => `value-label label-${d.country.replace(/\s/g, '-')}`)
-            .attr('x', x('2000-2012') + 15)
-            .attr('y', d => y(d.period1))
+            .attr('class', ishaD => `aadiss-value-label aadiss-label-${ishaD.country.replace(/\s/g, '-')}`)
+            .attr('x', ishaX('2000-2012') + 15)
+            .attr('y', ishaD => ishaY(ishaD.period1))
             .attr('text-anchor', 'start')
             .attr('dy', '0.35em')
             .attr('opacity', 0)
             .attr('fill', '#e2e8f0')
-            .text(d => `${d.period1.toFixed(1)}%`)
+            .text(ishaD => `${ishaD.period1.toFixed(1)}%`)
             .style('font-size', '12px');
 
-        // Add value labels (right side) - Only percentages
-        const rightLabels = svg.selectAll('.right-label')
-            .data(data)
+        const ishaRightLabels = ishaSvg.selectAll('.aadiss-right-label')
+            .data(ishaData)
             .join('text')
-            .attr('class', d => `value-label label-${d.country.replace(/\s/g, '-')}`)
-            .attr('x', x('2013-2025') + 15)
-            .attr('y', d => y(d.period1))
+            .attr('class', ishaD => `aadiss-value-label aadiss-label-${ishaD.country.replace(/\s/g, '-')}`)
+            .attr('x', ishaX('2013-2025') + 15)
+            .attr('y', ishaD => ishaY(ishaD.period1))
             .attr('text-anchor', 'start')
             .attr('dy', '0.35em')
             .attr('opacity', 0)
-            .attr('fill', d => d.improved ? '#28a745' : '#dc3545')
+            .attr('fill', ishaD => ishaD.improved ? '#28a745' : '#dc3545')
             .attr('font-weight', '600')
-            .text(d => `${d.period2.toFixed(1)}%`);
+            .text(ishaD => `${ishaD.period2.toFixed(1)}%`);
 
-        // Function to detect and resolve label overlaps
-        function resolveOverlaps(labels, isLeft = false) {
-            const labelNodes = labels.nodes();
-            const minGap = 18; // Minimum gap between labels
+        function ishaResolveOverlaps(ishaLabels, ishaIsLeft = false) {
+            const ishaLabelNodes = ishaLabels.nodes();
+            const ishaMinGap = 18;
 
-            const positions = labelNodes.map((node, i) => {
+            const ishaPositions = ishaLabelNodes.map((ishaNode, ishaI) => {
                 return {
-                    node: node,
-                    y: parseFloat(d3.select(node).attr('y')),
-                    originalY: parseFloat(d3.select(node).attr('y')),
-                    index: i
+                    node: ishaNode,
+                    y: parseFloat(d3.select(ishaNode).attr('y')),
+                    originalY: parseFloat(d3.select(ishaNode).attr('y')),
+                    index: ishaI
                 };
             });
 
-            // Sort by y position
-            positions.sort((a, b) => a.y - b.y);
+            ishaPositions.sort((ishaA, ishaB) => ishaA.y - ishaB.y);
 
-            // Adjust overlapping labels
-            for (let i = 1; i < positions.length; i++) {
-                const curr = positions[i];
-                const prev = positions[i - 1];
+            for (let ishaI = 1; ishaI < ishaPositions.length; ishaI++) {
+                const ishaCurr = ishaPositions[ishaI];
+                const ishaPrev = ishaPositions[ishaI - 1];
 
-                if (curr.y - prev.y < minGap) {
-                    curr.y = prev.y + minGap;
+                if (ishaCurr.y - ishaPrev.y < ishaMinGap) {
+                    ishaCurr.y = ishaPrev.y + ishaMinGap;
                 }
             }
 
-            // Apply adjusted positions with smooth transition
-            positions.forEach(pos => {
-                if (Math.abs(pos.y - pos.originalY) > 1) {
-                    d3.select(pos.node)
+            ishaPositions.forEach(ishaPos => {
+                if (Math.abs(ishaPos.y - ishaPos.originalY) > 1) {
+                    d3.select(ishaPos.node)
                         .transition()
                         .duration(400)
-                        .attr('y', pos.y);
+                        .attr('y', ishaPos.y);
                 }
             });
         }
 
-        // Add legend
-        const legend = svg.append('g')
-            .attr('class', 'legend')
-            .attr('transform', `translate(${width / 2 - 160}, ${height + 50})`);
+        const ishaLegend = ishaSvg.append('g')
+            .attr('class', 'aadiss-legend')
+            .attr('transform', `translate(${ishaWidth / 2 - 160}, ${ishaHeight + 50})`);
 
-        const legendData = [
+        const ishaLegendData = [
             { label: 'Improved (decreased failure)', color: '#28a745' },
             { label: 'Worsened (increased failure)', color: '#dc3545' }
         ];
 
-        legendData.forEach((item, i) => {
-            const legendItem = legend.append('g')
-                .attr('class', 'legend-item')
-                .attr('transform', `translate(${i * 190}, 0)`);
+        ishaLegendData.forEach((ishaItem, ishaI) => {
+            const ishaLegendItem = ishaLegend.append('g')
+                .attr('class', 'aadiss-legend-item')
+                .attr('transform', `translate(${ishaI * 190}, 0)`);
 
-            legendItem.append('line')
+            ishaLegendItem.append('line')
                 .attr('x1', 0)
                 .attr('x2', 40)
                 .attr('y1', 0)
                 .attr('y2', 0)
-                .attr('stroke', item.color)
+                .attr('stroke', ishaItem.color)
                 .attr('stroke-width', 3);
 
-            legendItem.append('text')
-                .attr('class', 'legend-text')
+            ishaLegendItem.append('text')
+                .attr('class', 'aadiss-legend-text')
                 .attr('x', 50)
                 .attr('y', 0)
                 .attr('dy', '0.35em')
-                .text(item.label);
+                .text(ishaItem.label);
         });
 
-        // Animate on scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Show left labels first
-                    leftLabels.transition()
+        const ishaObserver = new IntersectionObserver((ishaEntries) => {
+            ishaEntries.forEach(ishaEntry => {
+                if (ishaEntry.isIntersecting) {
+                    ishaLeftLabels.transition()
                         .duration(600)
-                        .delay((d, i) => i * 100)
+                        .delay((ishaD, ishaI) => ishaI * 100)
                         .attr('opacity', 1);
 
-                    leftPercentLabels.transition()
+                    ishaLeftPercentLabels.transition()
                         .duration(600)
-                        .delay((d, i) => i * 100)
+                        .delay((ishaD, ishaI) => ishaI * 100)
                         .attr('opacity', 1);
 
-                    // Draw lines
-                    lines.transition()
+                    ishaLines.transition()
                         .duration(1200)
-                        .delay((d, i) => 600 + i * 100)
+                        .delay((ishaD, ishaI) => 600 + ishaI * 100)
                         .ease(d3.easeCubicInOut)
-                        .attr('d', d => line([d.period1, d.period2]));
+                        .attr('d', ishaD => ishaLine([ishaD.period1, ishaD.period2]));
 
-                    // Show period 1 points
-                    points.selectAll('circle:nth-child(1)').transition()
+                    ishaPoints.selectAll('circle:nth-child(1)').transition()
                         .duration(500)
-                        .delay((d, i) => 600 + i * 100)
+                        .delay((ishaD, ishaI) => 600 + ishaI * 100)
                         .attr('opacity', 1);
 
-                    // Update and show period 2 points
-                    points.selectAll('circle:nth-child(2)').transition()
+                    ishaPoints.selectAll('circle:nth-child(2)').transition()
                         .duration(1200)
-                        .delay((d, i) => 600 + i * 100)
-                        .attr('cy', d => y(d.period2))
+                        .delay((ishaD, ishaI) => 600 + ishaI * 100)
+                        .attr('cy', ishaD => ishaY(ishaD.period2))
                         .attr('opacity', 1);
 
-                    // Show right labels
-                    rightLabels.transition()
+                    ishaRightLabels.transition()
                         .duration(600)
-                        .delay((d, i) => 1800 + i * 100)
-                        .attr('y', d => y(d.period2))
+                        .delay((ishaD, ishaI) => 1800 + ishaI * 100)
+                        .attr('y', ishaD => ishaY(ishaD.period2))
                         .attr('opacity', 1)
                         .on('end', function () {
-                            // After animation completes, resolve overlaps
                             setTimeout(() => {
-                                resolveOverlaps(rightLabels);
-                                resolveOverlaps(leftLabels, true);
+                                ishaResolveOverlaps(ishaRightLabels);
+                                ishaResolveOverlaps(ishaLeftLabels, true);
                             }, 200);
                         });
 
-                    observer.unobserve(entry.target);
+                    ishaObserver.unobserve(ishaEntry.target);
                 }
             });
         }, { threshold: 0.3 });
 
-        const section = document.getElementById('viz2-section');
-        if (section) observer.observe(section);
+        const ishaSection = document.getElementById('aadiss-viz2-section');
+        if (ishaSection) ishaObserver.observe(ishaSection);
     }
 
-    // Show mission details on click
-    function showMissionDetails(countryData, type) {
-        const missions = type === 'failure'
-            ? countryData.missions.filter(m => +m['Success Rate (%)'] < 70)
-            : countryData.missions.filter(m => +m['Success Rate (%)'] >= 70);
+    function ishaShowMissionDetails(ishaCountryData, ishaType) {
+        const ishaMissions = ishaType === 'failure'
+            ? ishaCountryData.missions.filter(ishaM => +ishaM['Success Rate (%)'] < 70)
+            : ishaCountryData.missions.filter(ishaM => +ishaM['Success Rate (%)'] >= 70);
 
-        const count = type === 'failure' ? countryData.failures : countryData.successes;
-        const rate = ((count / countryData.total) * 100).toFixed(1);
+        const ishaCount = ishaType === 'failure' ? ishaCountryData.failures : ishaCountryData.successes;
+        const ishaRate = ((ishaCount / ishaCountryData.total) * 100).toFixed(1);
 
-        alert(`${countryData.country}\n\n` +
-            `${type === 'failure' ? 'Failures' : 'Successes'}: ${count} missions\n` +
-            `${type === 'failure' ? 'Failure' : 'Success'} Rate: ${rate}%\n` +
-            `Total Missions: ${countryData.total}`);
+        alert(`${ishaCountryData.country}\n\n` +
+            `${ishaType === 'failure' ? 'Failures' : 'Successes'}: ${ishaCount} missions\n` +
+            `${ishaType === 'failure' ? 'Failure' : 'Success'} Rate: ${ishaRate}%\n` +
+            `Total Missions: ${ishaCountryData.total}`);
     }
 
-    // Tooltip functions
-    function showTooltip(event, html) {
-        tooltip
-            .html(html)
-            .style('left', (event.pageX + 15) + 'px')
-            .style('top', (event.pageY - 28) + 'px')
-            .classed('show', true)
+    function ishaShowTooltip(ishaEvent, ishaHtml) {
+        ishaTooltip
+            .html(ishaHtml)
+            .style('left', (ishaEvent.pageX + 15) + 'px')
+            .style('top', (ishaEvent.pageY - 28) + 'px')
+            .classed('aadiss-show', true)
             .style('opacity', 1);
     }
 
-    function hideTooltip() {
-        tooltip.classed('show', false).style('opacity', 0);
+    function ishaHideTooltip() {
+        ishaTooltip.classed('aadiss-show', false).style('opacity', 0);
     }
 
-    // Scroll effects
-    function initScrollEffects() {
-        const sections = document.querySelectorAll('.viz-section');
+    function ishaInitScrollEffects() {
+        const ishaSections = document.querySelectorAll('.aadiss-viz-section');
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
+        const ishaObserver = new IntersectionObserver((ishaEntries) => {
+            ishaEntries.forEach(ishaEntry => {
+                if (ishaEntry.isIntersecting) {
+                    ishaEntry.target.classList.add('aadiss-active');
                 }
             });
         }, {
             threshold: 0.2
         });
 
-        sections.forEach(section => {
-            observer.observe(section);
+        ishaSections.forEach(ishaSection => {
+            ishaObserver.observe(ishaSection);
         });
     }
 })();

@@ -1,427 +1,395 @@
 (function () {
-	// Configuration
-	const squareSize = 18;
-	const squaresPerRow = 15;
-	const squaresPerColumn = 10;
-	const missionsPerSquare = 10;
-	const maxSquares = squaresPerRow * squaresPerColumn; // 150 squares max
+	const sakshiSquareSize = 18;
+	const sakshiSquaresPerRow = 15;
+	const sakshiSquaresPerColumn = 10;
+	const sakshiMissionsPerSquare = 10;
+	const sakshiMaxSquares = sakshiSquaresPerRow * sakshiSquaresPerColumn;
 
-	// Color scale for decades
-	const colorScale = d3.scaleSequential(d3.interpolateRainbow);
+	const sakshiColorScale = d3.scaleSequential(d3.interpolateRainbow);
 
-	// Tooltip
-	const tooltip = d3.select("#tooltip-waffle");
+	const sakshiTooltip = d3.select("#aadiss-tooltip-waffle");
 
-	// Global variables (scoped)
-	let allData = [];
-	let decadeCounts = new Map();
-	let currentDecade = 'all';
+	let sakshiAllData = [];
+	let sakshiDecadeCounts = new Map();
+	let sakshiCurrentDecade = 'all';
 
-	// Load and process data
 	fetch("Space_Corrected.csv")
-		.then(response => response.text())
-		.then(csvText => {
-			const data = d3.csvParse(csvText);
-			processData(data);
+		.then(sakshiResponse => sakshiResponse.text())
+		.then(sakshiCsvText => {
+			const sakshiData = d3.csvParse(sakshiCsvText);
+			sakshiProcessData(sakshiData);
 		})
-		.catch(error => {
-			console.error("Error loading the CSV file:", error);
-			d3.select("#viz-waffle")
+		.catch(sakshiError => {
+			console.error("Error loading the CSV file:", sakshiError);
+			d3.select("#aadiss-viz-waffle")
 				.append("p")
 				.style("color", "red")
 				.text("Error loading data. Make sure 'Space_Corrected.csv' is in the same directory.");
 		});
 
-	function processData(data) {
-		// Extract years and decades
-		const processedData = data.map(d => {
-			const dateString = d.Datum;
-			const yearMatch = dateString.match(/(\d{4})/);
-			if (yearMatch) {
-				const year = +yearMatch[1];
-				const decade = Math.floor(year / 10) * 10; // e.g., 2015 -> 2010
-				return { year, decade };
+	function sakshiProcessData(sakshiData) {
+		const sakshiProcessedData = sakshiData.map(sakshiD => {
+			const sakshiDateString = sakshiD.Datum;
+			const sakshiYearMatch = sakshiDateString.match(/(\d{4})/);
+			if (sakshiYearMatch) {
+				const sakshiYear = +sakshiYearMatch[1];
+				const sakshiDecade = Math.floor(sakshiYear / 10) * 10;
+				return { year: sakshiYear, decade: sakshiDecade };
 			}
 			return null;
-		}).filter(d => d !== null);
+		}).filter(sakshiD => sakshiD !== null);
 
-		allData = processedData;
+		sakshiAllData = sakshiProcessedData;
 
-		// Aggregate by decade
-		decadeCounts = d3.rollup(
-			processedData,
-			v => v.length,
-			d => d.decade
+		sakshiDecadeCounts = d3.rollup(
+			sakshiProcessedData,
+			sakshiV => sakshiV.length,
+			sakshiD => sakshiD.decade
 		);
 
-		// Get sorted decades
-		const decades = Array.from(decadeCounts.keys()).sort((a, b) => a - b);
+		const sakshiDecades = Array.from(sakshiDecadeCounts.keys()).sort((sakshiA, sakshiB) => sakshiA - sakshiB);
 
-		// Set up color scale domain
-		colorScale.domain([decades[0], decades[decades.length - 1] + 9]);
+		sakshiColorScale.domain([sakshiDecades[0], sakshiDecades[sakshiDecades.length - 1] + 9]);
 
-		// Populate dropdown
-		populateDropdown(decades);
+		sakshiPopulateDropdown(sakshiDecades);
 
-		// Initialize with all years
-		createWaffleChart('all');
-		createLegend(decades);
+		sakshiCreateWaffleChart('all');
+		sakshiCreateLegend(sakshiDecades);
 
-		// Setup dropdown listener
-		d3.select("#yearSelect-waffle").on("change", function () {
-			const selectedDecade = this.value;
-			currentDecade = selectedDecade;
-			updateWaffleChart(selectedDecade);
+		d3.select("#aadiss-yearSelect-waffle").on("change", function () {
+			const sakshiSelectedDecade = this.value;
+			sakshiCurrentDecade = sakshiSelectedDecade;
+			sakshiUpdateWaffleChart(sakshiSelectedDecade);
 		});
 
-		// Keyboard support for left/right arrows
-		document.addEventListener('keydown', function (e) {
-			const dropdown = document.getElementById('yearSelect-waffle');
-			if (!dropdown) return;
-			const options = Array.from(dropdown.options);
-			let idx = options.findIndex(opt => opt.value === dropdown.value);
-			if (e.key === 'ArrowLeft') {
-				if (idx > 0) {
-					dropdown.value = options[idx - 1].value;
-					dropdown.dispatchEvent(new Event('change'));
+		document.addEventListener('keydown', function (sakshiE) {
+			const sakshiDropdown = document.getElementById('aadiss-yearSelect-waffle');
+			if (!sakshiDropdown) return;
+			const sakshiOptions = Array.from(sakshiDropdown.options);
+			let sakshiIdx = sakshiOptions.findIndex(sakshiOpt => sakshiOpt.value === sakshiDropdown.value);
+			if (sakshiE.key === 'ArrowLeft') {
+				if (sakshiIdx > 0) {
+					sakshiDropdown.value = sakshiOptions[sakshiIdx - 1].value;
+					sakshiDropdown.dispatchEvent(new Event('change'));
 				}
-			} else if (e.key === 'ArrowRight') {
-				if (idx < options.length - 1) {
-					dropdown.value = options[idx + 1].value;
-					dropdown.dispatchEvent(new Event('change'));
+			} else if (sakshiE.key === 'ArrowRight') {
+				if (sakshiIdx < sakshiOptions.length - 1) {
+					sakshiDropdown.value = sakshiOptions[sakshiIdx + 1].value;
+					sakshiDropdown.dispatchEvent(new Event('change'));
 				}
 			}
 		});
 	}
 
-	function populateDropdown(decades) {
-		const dropdown = d3.select("#yearSelect-waffle");
-		if (dropdown.empty()) return;
+	function sakshiPopulateDropdown(sakshiDecades) {
+		const sakshiDropdown = d3.select("#aadiss-yearSelect-waffle");
+		if (sakshiDropdown.empty()) return;
 
-		decades.forEach(decade => {
-			dropdown.append("option")
-				.attr("value", decade)
-				.text(`${decade}s (${decadeCounts.get(decade)} missions)`);
+		sakshiDecades.forEach(sakshiDecade => {
+			sakshiDropdown.append("option")
+				.attr("value", sakshiDecade)
+				.text(`${sakshiDecade}s (${sakshiDecadeCounts.get(sakshiDecade)} missions)`);
 		});
 	}
 
-	function createWaffleChart(decade) {
-		const container = d3.select("#viz-waffle");
-		if (container.empty()) return;
-		container.html(""); // Clear existing
+	function sakshiCreateWaffleChart(sakshiDecade) {
+		const sakshiContainer = d3.select("#aadiss-viz-waffle");
+		if (sakshiContainer.empty()) return;
+		sakshiContainer.html("");
 
-		const waffleContainer = container.append("div")
-			.attr("class", "waffle-container");
+		const sakshiWaffleContainer = sakshiContainer.append("div")
+			.attr("class", "aadiss-waffle-container");
 
-		// Calculate count for selected decade
-		let count;
-		let displayLabel;
+		let sakshiCount;
+		let sakshiDisplayLabel;
 
-		if (decade === 'all') {
-			count = allData.length;
-			displayLabel = "All Decades Combined";
+		if (sakshiDecade === 'all') {
+			sakshiCount = sakshiAllData.length;
+			sakshiDisplayLabel = "All Decades Combined";
 		} else {
-			count = decadeCounts.get(+decade);
-			displayLabel = `${decade}s`;
+			sakshiCount = sakshiDecadeCounts.get(+sakshiDecade);
+			sakshiDisplayLabel = `${sakshiDecade}s`;
 		}
 
-		// Update stats
-		animateCount(count);
+		sakshiAnimateCount(sakshiCount);
 
-		// Calculate number of squares needed
-		let numSquares = Math.ceil(count / missionsPerSquare);
-		numSquares = Math.min(numSquares, maxSquares); // Cap at max
+		let sakshiNumSquares = Math.ceil(sakshiCount / sakshiMissionsPerSquare);
+		sakshiNumSquares = Math.min(sakshiNumSquares, sakshiMaxSquares);
 
-		// Create SVG for waffle
-		const svg = waffleContainer.append("svg")
-			.attr("width", squaresPerRow * (squareSize + 3))
-			.attr("height", squaresPerColumn * (squareSize + 3));
+		const sakshiSvg = sakshiWaffleContainer.append("svg")
+			.attr("width", sakshiSquaresPerRow * (sakshiSquareSize + 3))
+			.attr("height", sakshiSquaresPerColumn * (sakshiSquareSize + 3));
 
-		// Create squares
-		const squares = [];
-		const fractional = count % missionsPerSquare;
-		for (let i = 0; i < maxSquares; i++) {
-			const row = Math.floor(i / squaresPerRow);
-			const col = i % squaresPerRow;
-			const isActive = i < numSquares;
-			const isFractional = isActive && (i === numSquares - 1) && (fractional !== 0);
-			squares.push({
-				id: i,
-				x: col * (squareSize + 3),
-				y: row * (squareSize + 3),
-				active: isActive,
-				missions: isActive ? (i === numSquares - 1 ? count - (i * missionsPerSquare) : missionsPerSquare) : 0,
-				fractional: isFractional,
-				fraction: isFractional ? fractional / missionsPerSquare : 1
+		const sakshiSquares = [];
+		const sakshiFractional = sakshiCount % sakshiMissionsPerSquare;
+		for (let sakshiI = 0; sakshiI < sakshiMaxSquares; sakshiI++) {
+			const sakshiRow = Math.floor(sakshiI / sakshiSquaresPerRow);
+			const sakshiCol = sakshiI % sakshiSquaresPerRow;
+			const sakshiIsActive = sakshiI < sakshiNumSquares;
+			const sakshiIsFractional = sakshiIsActive && (sakshiI === sakshiNumSquares - 1) && (sakshiFractional !== 0);
+			sakshiSquares.push({
+				id: sakshiI,
+				x: sakshiCol * (sakshiSquareSize + 3),
+				y: sakshiRow * (sakshiSquareSize + 3),
+				active: sakshiIsActive,
+				missions: sakshiIsActive ? (sakshiI === sakshiNumSquares - 1 ? sakshiCount - (sakshiI * sakshiMissionsPerSquare) : sakshiMissionsPerSquare) : 0,
+				fractional: sakshiIsFractional,
+				fraction: sakshiIsFractional ? sakshiFractional / sakshiMissionsPerSquare : 1
 			});
 		}
 
-		// Draw squares with improved tooltips and partial-filling
-		const defs = svg.selectAll('defs').data([null]);
-		defs.join('defs').html(`
-		<pattern id="diagonalMask" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+		const sakshiDefs = sakshiSvg.selectAll('defs').data([null]);
+		sakshiDefs.join('defs').html(`
+		<pattern id="aadiss-diagonalMask" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
 			<rect x="0" y="0" width="8" height="8" fill="white" opacity="0.5"/>
 			<line x1="0" y1="0" x2="8" y2="8" stroke="#888" stroke-width="1" opacity="0.3"/>
 		</pattern>
 	`);
 
-		// Compute a single color for the selected decade
-		let decadeColor = (decade === 'all') ? '#4CAF50' : colorScale(+decade + 5);
+		let sakshiDecadeColor = (sakshiDecade === 'all') ? '#4CAF50' : sakshiColorScale(+sakshiDecade + 5);
 
-		const squaresSel = svg.selectAll(".waffle-square")
-			.data(squares, d => d.id)
+		const sakshiSquaresSel = sakshiSvg.selectAll(".aadiss-waffle-square")
+			.data(sakshiSquares, sakshiD => sakshiD.id)
 			.join("rect")
-			.attr("class", "waffle-square")
-			.attr("x", d => d.x)
-			.attr("y", d => d.y)
-			.attr("width", squareSize)
-			.attr("height", squareSize)
+			.attr("class", "aadiss-waffle-square")
+			.attr("x", sakshiD => sakshiD.x)
+			.attr("y", sakshiD => sakshiD.y)
+			.attr("width", sakshiSquareSize)
+			.attr("height", sakshiSquareSize)
 			.attr("rx", 2)
-			.style("fill", d => {
-				if (!d.active) return '#2a2a2a';
-				if (d.fractional) return d3.color(decadeColor).brighter(1.5);
-				return decadeColor;
+			.style("fill", sakshiD => {
+				if (!sakshiD.active) return '#2a2a2a';
+				if (sakshiD.fractional) return d3.color(sakshiDecadeColor).brighter(1.5);
+				return sakshiDecadeColor;
 			})
-			.style("opacity", d => d.active ? 0 : 0.2)
-			.style("cursor", d => d.active ? "pointer" : "default")
-			.on("mouseover", function (event, d) {
-				if (d.active) {
+			.style("opacity", sakshiD => sakshiD.active ? 0 : 0.2)
+			.style("cursor", sakshiD => sakshiD.active ? "pointer" : "default")
+			.on("mouseover", function (sakshiEvent, sakshiD) {
+				if (sakshiD.active) {
 					d3.select(this)
 						.transition()
 						.duration(200)
 						.style("opacity", 1)
-						.attr("width", squareSize * 1.2)
-						.attr("height", squareSize * 1.2)
-						.attr("x", d.x - squareSize * 0.1)
-						.attr("y", d.y - squareSize * 0.1);
+						.attr("width", sakshiSquareSize * 1.2)
+						.attr("height", sakshiSquareSize * 1.2)
+						.attr("x", sakshiD.x - sakshiSquareSize * 0.1)
+						.attr("y", sakshiD.y - sakshiSquareSize * 0.1);
 
-					// Calculate mission range for this square
-					let startMission = d.id * missionsPerSquare + 1;
-					let endMission = d.id * missionsPerSquare + d.missions;
-					if (d.missions === 0) {
-						startMission = 0;
-						endMission = 0;
+					let sakshiStartMission = sakshiD.id * sakshiMissionsPerSquare + 1;
+					let sakshiEndMission = sakshiD.id * sakshiMissionsPerSquare + sakshiD.missions;
+					if (sakshiD.missions === 0) {
+						sakshiStartMission = 0;
+						sakshiEndMission = 0;
 					}
 
-					tooltip
+					sakshiTooltip
 						.style("display", "block")
 						.html(`
-						<div class="tooltip-decade"><strong>${displayLabel}</strong></div>
-						<div class="tooltip-info">
-							<strong>Square #${d.id + 1}</strong><br>
-							Missions: <strong>${d.missions}</strong><br>
-							Range: <strong>${startMission}${d.missions > 1 ? ' - ' + endMission : ''}</strong>
-							${d.fractional ? `<br><span style='color:#888;'>Partial square: ${d.missions}/${missionsPerSquare}</span>` : ''}
+						<div class="aadiss-tooltip-decade"><strong>${sakshiDisplayLabel}</strong></div>
+						<div class="aadiss-tooltip-info">
+							<strong>Square #${sakshiD.id + 1}</strong><br>
+							Missions: <strong>${sakshiD.missions}</strong><br>
+							Range: <strong>${sakshiStartMission}${sakshiD.missions > 1 ? ' - ' + sakshiEndMission : ''}</strong>
+							${sakshiD.fractional ? `<br><span style='color:#888;'>Partial square: ${sakshiD.missions}/${sakshiMissionsPerSquare}</span>` : ''}
 						</div>
-						<div class="tooltip-info" style="margin-top: 5px;">
-							Total in period: <strong>${count}</strong>
+						<div class="aadiss-tooltip-info" style="margin-top: 5px;">
+							Total in period: <strong>${sakshiCount}</strong>
 						</div>
 					`);
 				}
 			})
-			.on("mousemove", function (event) {
-				tooltip
-					.style("left", (event.pageX + 15) + "px")
-					.style("top", (event.pageY - 30) + "px");
+			.on("mousemove", function (sakshiEvent) {
+				sakshiTooltip
+					.style("left", (sakshiEvent.pageX + 15) + "px")
+					.style("top", (sakshiEvent.pageY - 30) + "px");
 			})
-			.on("mouseleave", function (event, d) {
-				if (d.active) {
+			.on("mouseleave", function (sakshiEvent, sakshiD) {
+				if (sakshiD.active) {
 					d3.select(this)
 						.transition()
 						.duration(200)
 						.style("opacity", 0.9)
-						.attr("width", squareSize)
-						.attr("height", squareSize)
-						.attr("x", d.x)
-						.attr("y", d.y);
+						.attr("width", sakshiSquareSize)
+						.attr("height", sakshiSquareSize)
+						.attr("x", sakshiD.x)
+						.attr("y", sakshiD.y);
 				}
-				tooltip.style("display", "none");
+				sakshiTooltip.style("display", "none");
 			})
-			.transition()
-			.delay((d, i) => i * 2)
+			.transition().delay((sakshiD, sakshiI) => sakshiI * 2)
 			.duration(500)
-			.style("opacity", d => d.active ? 0.9 : 0.2);
+			.style("opacity", sakshiD => sakshiD.active ? 0.9 : 0.2);
 
-		// Add diagonal mask for fractional squares
-		squaresSel.filter(d => d.fractional)
-			.attr('clip-path', (d, i) => {
-				// Clip to fraction
-				const w = squareSize * d.fraction;
-				const id = `clip-fraction-${d.id}`;
-				svg.append('clipPath')
-					.attr('id', id)
+		sakshiSquaresSel.filter(sakshiD => sakshiD.fractional)
+			.attr('clip-path', (sakshiD, sakshiI) => {
+				const sakshiW = sakshiSquareSize * sakshiD.fraction;
+				const sakshiId = `aadiss-clip-fraction-${sakshiD.id}`;
+				sakshiSvg.append('clipPath')
+					.attr('id', sakshiId)
 					.append('rect')
-					.attr('x', d.x)
-					.attr('y', d.y)
-					.attr('width', w)
-					.attr('height', squareSize);
-				return `url(#${id})`;
+					.attr('x', sakshiD.x)
+					.attr('y', sakshiD.y)
+					.attr('width', sakshiW)
+					.attr('height', sakshiSquareSize);
+				return `url(#${sakshiId})`;
 			})
-			.attr('fill', `url(#diagonalMask)`);
+			.attr('fill', `url(#aadiss-diagonalMask)`);
 	}
 
-	function updateWaffleChart(decade) {
-		// Calculate count for selected decade
-		let count;
-		let displayLabel;
+	function sakshiUpdateWaffleChart(sakshiDecade) {
+		let sakshiCount;
+		let sakshiDisplayLabel;
 
-		if (decade === 'all') {
-			count = allData.length;
-			displayLabel = "All Decades Combined";
+		if (sakshiDecade === 'all') {
+			sakshiCount = sakshiAllData.length;
+			sakshiDisplayLabel = "All Decades Combined";
 		} else {
-			count = decadeCounts.get(+decade);
-			displayLabel = `${decade}s`;
+			sakshiCount = sakshiDecadeCounts.get(+sakshiDecade);
+			sakshiDisplayLabel = `${sakshiDecade}s`;
 		}
 
-		// Update stats
-		animateCount(count);
+		sakshiAnimateCount(sakshiCount);
 
-		// Calculate number of squares needed
-		let numSquares = Math.ceil(count / missionsPerSquare);
-		numSquares = Math.min(numSquares, maxSquares);
+		let sakshiNumSquares = Math.ceil(sakshiCount / sakshiMissionsPerSquare);
+		sakshiNumSquares = Math.min(sakshiNumSquares, sakshiMaxSquares);
 
-		const svg = d3.select("#viz-waffle svg");
+		const sakshiSvg = d3.select("#aadiss-viz-waffle svg");
 
-		// Update square data
-		const squares = [];
-		for (let i = 0; i < maxSquares; i++) {
-			const row = Math.floor(i / squaresPerRow);
-			const col = i % squaresPerRow;
-			const isActive = i < numSquares;
+		const sakshiSquares = [];
+		for (let sakshiI = 0; sakshiI < sakshiMaxSquares; sakshiI++) {
+			const sakshiRow = Math.floor(sakshiI / sakshiSquaresPerRow);
+			const sakshiCol = sakshiI % sakshiSquaresPerRow;
+			const sakshiIsActive = sakshiI < sakshiNumSquares;
 
-			squares.push({
-				id: i,
-				x: col * (squareSize + 3),
-				y: row * (squareSize + 3),
-				active: isActive,
-				missions: isActive ? (i === numSquares - 1 ? count - (i * missionsPerSquare) : missionsPerSquare) : 0
+			sakshiSquares.push({
+				id: sakshiI,
+				x: sakshiCol * (sakshiSquareSize + 3),
+				y: sakshiRow * (sakshiSquareSize + 3),
+				active: sakshiIsActive,
+				missions: sakshiIsActive ? (sakshiI === sakshiNumSquares - 1 ? sakshiCount - (sakshiI * sakshiMissionsPerSquare) : sakshiMissionsPerSquare) : 0
 			});
 		}
 
-		// Morph the squares with staggered enter/exit animation
-		const t = svg.transition().duration(800);
-		svg.selectAll(".waffle-square")
-			.data(squares, d => d.id)
+		const sakshiT = sakshiSvg.transition().duration(800);
+		sakshiSvg.selectAll(".aadiss-waffle-square")
+			.data(sakshiSquares, sakshiD => sakshiD.id)
 			.join(
-				enter => enter.append("rect")
-					.attr("class", "waffle-square")
-					.attr("x", d => d.x)
-					.attr("y", d => d.y)
-					.attr("width", squareSize)
-					.attr("height", squareSize)
+				sakshiEnter => sakshiEnter.append("rect")
+					.attr("class", "aadiss-waffle-square")
+					.attr("x", sakshiD => sakshiD.x)
+					.attr("y", sakshiD => sakshiD.y)
+					.attr("width", sakshiSquareSize)
+					.attr("height", sakshiSquareSize)
 					.attr("rx", 2)
-					.style("fill", d => d.active ? (decade === 'all' ? '#4CAF50' : colorScale(+decade + 5)) : '#2a2a2a')
+					.style("fill", sakshiD => sakshiD.active ? (sakshiDecade === 'all' ? '#4CAF50' : sakshiColorScale(+sakshiDecade + 5)) : '#2a2a2a')
 					.style("opacity", 0)
-					.style("cursor", d => d.active ? "pointer" : "default")
-					.call(enter => enter.transition(t)
-						.delay((d, i) => i * 10)
-						.style("opacity", d => d.active ? 0.9 : 0.2)
+					.style("cursor", sakshiD => sakshiD.active ? "pointer" : "default")
+					.call(sakshiEnter => sakshiEnter.transition(sakshiT)
+						.delay((sakshiD, sakshiI) => sakshiI * 10)
+						.style("opacity", sakshiD => sakshiD.active ? 0.9 : 0.2)
 					),
-				update => update.call(update => update.transition(t)
-					.delay((d, i) => i * 10)
-					.style("fill", d => d.active ? (decade === 'all' ? '#4CAF50' : colorScale(+decade + 5)) : '#2a2a2a')
-					.style("opacity", d => d.active ? 0.9 : 0.2)
-					.style("cursor", d => d.active ? "pointer" : "default")
+				sakshiUpdate => sakshiUpdate.call(sakshiUpdate => sakshiUpdate.transition(sakshiT)
+					.delay((sakshiD, sakshiI) => sakshiI * 10)
+					.style("fill", sakshiD => sakshiD.active ? (sakshiDecade === 'all' ? '#4CAF50' : sakshiColorScale(+sakshiDecade + 5)) : '#2a2a2a')
+					.style("opacity", sakshiD => sakshiD.active ? 0.9 : 0.2)
+					.style("cursor", sakshiD => sakshiD.active ? "pointer" : "default")
 				),
-				exit => exit.call(exit => exit.transition(t)
-					.delay((d, i) => i * 10)
+				sakshiExit => sakshiExit.call(sakshiExit => sakshiExit.transition(sakshiT)
+					.delay((sakshiD, sakshiI) => sakshiI * 10)
 					.style("opacity", 0)
 					.remove()
 				)
 			);
 	}
 
-	function animateCount(targetCount) {
-		const element = d3.select("#currentCount-waffle");
-		if (element.empty()) return;
-		const startCount = +element.text() || 0;
-		const duration = 1000;
-		const steps = 50;
-		const increment = (targetCount - startCount) / steps;
-		const stepDuration = duration / steps;
+	function sakshiAnimateCount(sakshiTargetCount) {
+		const sakshiElement = d3.select("#aadiss-currentCount-waffle");
+		if (sakshiElement.empty()) return;
+		const sakshiStartCount = +sakshiElement.text() || 0;
+		const sakshiDuration = 1000;
+		const sakshiSteps = 50;
+		const sakshiIncrement = (sakshiTargetCount - sakshiStartCount) / sakshiSteps;
+		const sakshiStepDuration = sakshiDuration / sakshiSteps;
 
-		let current = startCount;
-		let step = 0;
+		let sakshiCurrent = sakshiStartCount;
+		let sakshiStep = 0;
 
-		const timer = setInterval(() => {
-			step++;
-			current += increment;
+		const sakshiTimer = setInterval(() => {
+			sakshiStep++;
+			sakshiCurrent += sakshiIncrement;
 
-			if (step >= steps) {
-				element.text(targetCount);
-				clearInterval(timer);
+			if (sakshiStep >= sakshiSteps) {
+				sakshiElement.text(sakshiTargetCount);
+				clearInterval(sakshiTimer);
 			} else {
-				element.text(Math.round(current));
+				sakshiElement.text(Math.round(sakshiCurrent));
 			}
-		}, stepDuration);
+		}, sakshiStepDuration);
 	}
 
-	function createLegend(decades) {
-		const legend = d3.select("#legend-waffle");
-		if (legend.empty()) return;
-		legend.html(""); // Clear existing
+	function sakshiCreateLegend(sakshiDecades) {
+		const sakshiLegend = d3.select("#aadiss-legend-waffle");
+		if (sakshiLegend.empty()) return;
+		sakshiLegend.html("");
 
-		// Create gradient legend
-		const legendItem = legend.append("div")
-			.attr("class", "legend-item")
+		const sakshiLegendItem = sakshiLegend.append("div")
+			.attr("class", "aadiss-legend-item")
 			.style("flex-direction", "column")
 			.style("align-items", "flex-start");
 
-		legendItem.append("div")
+		sakshiLegendItem.append("div")
 			.style("font-weight", "bold")
 			.style("margin-bottom", "10px")
 			.text("Decade Color Scale:");
 
-		const gradientContainer = legendItem.append("div")
+		const sakshiGradientContainer = sakshiLegendItem.append("div")
 			.style("display", "flex")
 			.style("align-items", "center")
 			.style("gap", "10px");
 
-		// Create gradient bar
-		const gradientSvg = gradientContainer.append("svg")
+		const sakshiGradientSvg = sakshiGradientContainer.append("svg")
 			.attr("width", 200)
 			.attr("height", 20);
 
-		const defs = gradientSvg.append("defs");
-		const gradient = defs.append("linearGradient")
-			.attr("id", "year-gradient")
+		const sakshiDefs = sakshiGradientSvg.append("defs");
+		const sakshiGradient = sakshiDefs.append("linearGradient")
+			.attr("id", "aadiss-year-gradient")
 			.attr("x1", "0%")
 			.attr("y1", "0%")
 			.attr("x2", "100%")
 			.attr("y2", "0%");
 
-		gradient.append("stop")
+		sakshiGradient.append("stop")
 			.attr("offset", "0%")
-			.attr("stop-color", colorScale(decades[0] + 5));
+			.attr("stop-color", sakshiColorScale(sakshiDecades[0] + 5));
 
-		gradient.append("stop")
+		sakshiGradient.append("stop")
 			.attr("offset", "100%")
-			.attr("stop-color", colorScale(decades[decades.length - 1] + 5));
+			.attr("stop-color", sakshiColorScale(sakshiDecades[sakshiDecades.length - 1] + 5));
 
-		gradientSvg.append("rect")
+		sakshiGradientSvg.append("rect")
 			.attr("width", 200)
 			.attr("height", 20)
 			.attr("rx", 3)
-			.style("fill", "url(#year-gradient)");
+			.style("fill", "url(#aadiss-year-gradient)");
 
-		gradientContainer.append("span")
+		sakshiGradientContainer.append("span")
 			.style("font-size", "12px")
 			.style("color", "#888")
-			.text(`${decades[0]}s  0 ${decades[decades.length - 1]}s`);
+			.text(`${sakshiDecades[0]}s  0 ${sakshiDecades[sakshiDecades.length - 1]}s`);
 
-		// Add info about squares
-		const infoItem = legend.append("div")
-			.attr("class", "legend-item")
+		const sakshiInfoItem = sakshiLegend.append("div")
+			.attr("class", "aadiss-legend-item")
 			.style("margin-top", "10px");
 
-		infoItem.append("div")
-			.attr("class", "legend-color")
+		sakshiInfoItem.append("div")
+			.attr("class", "aadiss-legend-color")
 			.style("background-color", "#4CAF50")
 			.style("width", "15px")
 			.style("height", "15px");
 
-		infoItem.append("span")
-			.attr("class", "legend-label")
+		sakshiInfoItem.append("span")
+			.attr("class", "aadiss-legend-label")
 			.text("Each square = 10 missions");
 	}
 })();

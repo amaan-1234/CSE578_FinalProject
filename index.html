@@ -10,46 +10,46 @@
 
 <body>
 
-  <div class="landing-title">
+  <div class="aadiss-landing-title">
     <h1>Beyond Earth: Do Space missions matter?</h1>
   </div>
 
-  <div class="split-container container-landing">
-    <div class="split split-left">
-      <div class="split-content">
+  <div class="aadiss-split-container aadiss-container-landing">
+    <div class="aadiss-split aadiss-split-left">
+      <div class="aadiss-split-content">
         <h1>Pros</h1>
         <p>Technological advancement, scientific discovery, and economic growth.</p>
-        <a href="pros.html" class="btn-split">Benefits</a>
+        <a href="pros.html" class="aadiss-btn-split">Benefits</a>
       </div>
     </div>
-    <div class="split split-right">
-      <div class="split-content">
+    <div class="aadiss-split aadiss-split-right">
+      <div class="aadiss-split-content">
         <h1>Cons</h1>
         <p>Space debris, environmental impact, and mission failures.</p>
-        <a href="cons.html" class="btn-split">Risks</a>
+        <a href="cons.html" class="aadiss-btn-split">Risks</a>
       </div>
     </div>
   </div>
 
   <script>
-    const left = document.querySelector('.split-left');
-    const right = document.querySelector('.split-right');
-    const container = document.querySelector('.split-container');
+    const aadissLeft = document.querySelector('.aadiss-split-left');
+    const aadissRight = document.querySelector('.aadiss-split-right');
+    const aadissContainer = document.querySelector('.aadiss-split-container');
 
-    left.addEventListener('mouseenter', () => {
-      container.classList.add('hover-left');
+    aadissLeft.addEventListener('mouseenter', () => {
+      aadissContainer.classList.add('aadiss-hover-left');
     });
 
-    left.addEventListener('mouseleave', () => {
-      container.classList.remove('hover-left');
+    aadissLeft.addEventListener('mouseleave', () => {
+      aadissContainer.classList.remove('aadiss-hover-left');
     });
 
-    right.addEventListener('mouseenter', () => {
-      container.classList.add('hover-right');
+    aadissRight.addEventListener('mouseenter', () => {
+      aadissContainer.classList.add('aadiss-hover-right');
     });
 
-    right.addEventListener('mouseleave', () => {
-      container.classList.remove('hover-right');
+    aadissRight.addEventListener('mouseleave', () => {
+      aadissContainer.classList.remove('aadiss-hover-right');
     });
   </script>
 </body>

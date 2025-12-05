@@ -1,62 +1,60 @@
 (function () {
   document.addEventListener("DOMContentLoaded", function () {
-    dataset();
+    abbhijitDataset();
   });
 
-  function dataset() {
-    // Assuming the CSV file is in the same directory or served correctly
+  function abbhijitDataset() {
     fetch("near earth objects.csv")
-      .then(res => res.text())
-      .then(csv => {
-        var result = Papa.parse(csv, { header: true });
-        var data = result.data;
+      .then(abbhijitRes => abbhijitRes.text())
+      .then(abbhijitCsv => {
+        var abbhijitResult = Papa.parse(abbhijitCsv, { header: true });
+        var abbhijitData = abbhijitResult.data;
 
-        var yearList = [];
-        var missDistances = [];
-        var brightnessValues = [];
-        var names = [];
-        var dateStrs = [];
+        var abbhijitYearList = [];
+        var abbhijitMissDistances = [];
+        var abbhijitBrightnessValues = [];
+        var abbhijitNames = [];
+        var abbhijitDateStrs = [];
 
-        for (var i = 0; i < data.length; i++) {
-          var item = data[i];
-          if (!item["Close-Approach (CA) Date"]) continue;
+        for (var abbhijitI = 0; abbhijitI < abbhijitData.length; abbhijitI++) {
+          var abbhijitItem = abbhijitData[abbhijitI];
+          if (!abbhijitItem["Close-Approach (CA) Date"]) continue;
 
-          var cleanDate = item["Close-Approach (CA) Date"].split("±")[0].trim();
-          var dObj = new Date(cleanDate);
-          if (isNaN(dObj)) continue;
+          var abbhijitCleanDate = abbhijitItem["Close-Approach (CA) Date"].split("±")[0].trim();
+          var abbhijitDObj = new Date(abbhijitCleanDate);
+          if (isNaN(abbhijitDObj)) continue;
 
-          yearList.push(dObj.getFullYear());
-          dateStrs.push(cleanDate);
-          names.push(item["Object"]);
-          missDistances.push(parseFloat(item["CA Distance Nominal (LD | au)"]) || null);
-          brightnessValues.push(parseFloat(item["H (mag)"]) || null);
+          abbhijitYearList.push(abbhijitDObj.getFullYear());
+          abbhijitDateStrs.push(abbhijitCleanDate);
+          abbhijitNames.push(abbhijitItem["Object"]);
+          abbhijitMissDistances.push(parseFloat(abbhijitItem["CA Distance Nominal (LD | au)"]) || null);
+          abbhijitBrightnessValues.push(parseFloat(abbhijitItem["H (mag)"]) || null);
         }
 
-        var filteredYears = yearList.filter(y => y >= 2000 && y <= 2025);
-        var byYear = {};
-        filteredYears.forEach(y => byYear[y] = (byYear[y] || 0) + 1);
+        var abbhijitFilteredYears = abbhijitYearList.filter(abbhijitY => abbhijitY >= 2000 && abbhijitY <= 2025);
+        var abbhijitByYear = {};
+        abbhijitFilteredYears.forEach(abbhijitY => abbhijitByYear[abbhijitY] = (abbhijitByYear[abbhijitY] || 0) + 1);
 
-        var finalYears = Object.keys(byYear).map(Number).sort((a, b) => a - b);
-        var finalCounts = finalYears.map(y => byYear[y]);
+        var abbhijitFinalYears = Object.keys(abbhijitByYear).map(Number).sort((abbhijitA, abbhijitB) => abbhijitA - abbhijitB);
+        var abbhijitFinalCounts = abbhijitFinalYears.map(abbhijitY => abbhijitByYear[abbhijitY]);
 
-        var cumulative = [];
-        var sum = 0;
-        finalCounts.forEach(c => { sum += c; cumulative.push(sum); });
+        var abbhijitCumulative = [];
+        var abbhijitSum = 0;
+        abbhijitFinalCounts.forEach(abbhijitC => { abbhijitSum += abbhijitC; abbhijitCumulative.push(abbhijitSum); });
 
-        makeBar(finalYears, cumulative);
-        makeScatter(yearList, missDistances, brightnessValues, names, dateStrs);
+        abbhijitMakeBar(abbhijitFinalYears, abbhijitCumulative);
+        abbhijitMakeScatter(abbhijitYearList, abbhijitMissDistances, abbhijitBrightnessValues, abbhijitNames, abbhijitDateStrs);
       })
-      .catch(err => console.error("Error loading NEO data:", err));
+      .catch(abbhijitErr => console.error("Error loading NEO data:", abbhijitErr));
   }
 
-  // bar plot function
-  function makeBar(yearArr, countArr) {
-    var xSmooth = [yearArr[0] - 1].concat(yearArr);
-    var ySmooth = [0].concat(countArr);
+  function abbhijitMakeBar(abbhijitYearArr, abbhijitCountArr) {
+    var abbhijitXSmooth = [abbhijitYearArr[0] - 1].concat(abbhijitYearArr);
+    var abbhijitYSmooth = [0].concat(abbhijitCountArr);
 
-    var barLayer = {
-      x: yearArr,
-      y: countArr,
+    var abbhijitBarLayer = {
+      x: abbhijitYearArr,
+      y: abbhijitCountArr,
       type: "bar",
       marker: {
         color: "#5b8ee6",
@@ -68,9 +66,9 @@
       hovertemplate: "Year: %{x}<br>Count: %{y}<extra></extra>"
     };
 
-    var trendLine = {
-      x: xSmooth,
-      y: ySmooth,
+    var abbhijitTrendLine = {
+      x: abbhijitXSmooth,
+      y: abbhijitYSmooth,
       mode: "lines",
       line: {
         color: "rgba(120,120,120,0.55)",
@@ -81,7 +79,7 @@
       hoverinfo: "skip"
     };
 
-    var chartSettings = {
+    var abbhijitChartSettings = {
       font: { color: "#ffffff" },
       title: {
         text: "NEO Approaches (Cumulative, 2000-2025)",
@@ -113,44 +111,43 @@
       }
     };
 
-    Plotly.newPlot("barChart", [barLayer, trendLine], chartSettings);
+    Plotly.newPlot("barChart", [abbhijitBarLayer, abbhijitTrendLine], abbhijitChartSettings);
   }
 
-  // scatter plot
-  function makeScatter(yList, distList, hList, objNames, dateLabels) {
-    var points = [];
+  function abbhijitMakeScatter(abbhijitYList, abbhijitDistList, abbhijitHList, abbhijitObjNames, abbhijitDateLabels) {
+    var abbhijitPoints = [];
 
-    for (var i = 0; i < yList.length; i++) {
-      if (!distList[i]) continue;
-      points.push({
-        year: yList[i],
-        dist: distList[i],
-        h: hList[i],
-        name: objNames[i],
-        date: dateLabels[i]
+    for (var abbhijitI = 0; abbhijitI < abbhijitYList.length; abbhijitI++) {
+      if (!abbhijitDistList[abbhijitI]) continue;
+      abbhijitPoints.push({
+        year: abbhijitYList[abbhijitI],
+        dist: abbhijitDistList[abbhijitI],
+        h: abbhijitHList[abbhijitI],
+        name: abbhijitObjNames[abbhijitI],
+        date: abbhijitDateLabels[abbhijitI]
       });
     }
-    points.sort((a, b) => a.dist - b.dist);
-    points = points.slice(0, 20);
+    abbhijitPoints.sort((abbhijitA, abbhijitB) => abbhijitA.dist - abbhijitB.dist);
+    abbhijitPoints = abbhijitPoints.slice(0, 20);
 
-    var trace = {
-      x: points.map(p => p.h),
-      y: points.map(p => p.dist),
+    var abbhijitTrace = {
+      x: abbhijitPoints.map(abbhijitP => abbhijitP.h),
+      y: abbhijitPoints.map(abbhijitP => abbhijitP.dist),
       mode: "markers",
       marker: {
-        size: points.map(p => Math.max(12, 28 - p.h)),
-        color: points.map(p => p.h),
+        size: abbhijitPoints.map(abbhijitP => Math.max(12, 28 - abbhijitP.h)),
+        color: abbhijitPoints.map(abbhijitP => abbhijitP.h),
         colorscale: "Viridis",
         opacity: 0.9,
         line: { width: 1, color: "black" }
       },
-      text: points.map(p =>
-        `<b>${p.name}</b><br>H-mag: ${p.h}<br>Miss Dist: ${p.dist} LD<br>Year: ${p.year}`
+      text: abbhijitPoints.map(abbhijitP =>
+        `<b>${abbhijitP.name}</b><br>H-mag: ${abbhijitP.h}<br>Miss Dist: ${abbhijitP.dist} LD<br>Year: ${abbhijitP.year}`
       ),
       hovertemplate: "%{text}<extra></extra>"
     };
 
-    var layout = {
+    var abbhijitLayout = {
       font: { color: "#ffffff" },
       title: {
         text: "Closest 20 Near-Earth Approaches",
@@ -176,6 +173,6 @@
         namelength: -1
       }
     };
-    Plotly.newPlot("scatterPlot", [trace], layout);
+    Plotly.newPlot("scatterPlot", [abbhijitTrace], abbhijitLayout);
   }
 })();

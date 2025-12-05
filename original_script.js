@@ -1,486 +1,447 @@
 (function () {
-  const tip = d3.select('#tooltip');
+  const origTip = d3.select('#aadiss-tooltip');
 
-  // --- Helpers --------------------------------------------------------------
-  function normalizeType(s) {
-    if (!s) return '';
-    s = String(s).toUpperCase().trim().replace(/_/g, ' ').replace(/\s+/g, ' ');
-    if (s === 'RB' || s === 'ROCKETBODY' || s === 'ROCKET  BODY') return 'ROCKET BODY';
-    if (s.includes('ROCKET') && s.includes('BODY')) return 'ROCKET BODY';
-    if (s.includes('PAYLOAD')) return 'PAYLOAD';
-    if (s.includes('DEBRIS')) return 'DEBRIS';
-    return s;
+  function origNormalizeType(origS) {
+    if (!origS) return '';
+    origS = String(origS).toUpperCase().trim().replace(/_/g, ' ').replace(/\s+/g, ' ');
+    if (origS === 'RB' || origS === 'ROCKETBODY' || origS === 'ROCKET  BODY') return 'ROCKET BODY';
+    if (origS.includes('ROCKET') && origS.includes('BODY')) return 'ROCKET BODY';
+    if (origS.includes('PAYLOAD')) return 'PAYLOAD';
+    if (origS.includes('DEBRIS')) return 'DEBRIS';
+    return origS;
   }
 
-  function parseAnyDate(x) {
-    if (!x) return null;
-    x = String(x).trim();
-    // Handle 4-digit year directly
-    if (/^\d{4}$/.test(x)) {
-      return new Date(+x, 0, 1);
+  function origParseAnyDate(origX) {
+    if (!origX) return null;
+    origX = String(origX).trim();
+    if (/^\d{4}$/.test(origX)) {
+      return new Date(+origX, 0, 1);
     }
-    // Common formats: 2005-06-12, 2012/03/01, 3/1/2012, etc.
-    const d = new Date(x);
-    if (!isNaN(d)) return d;
-    // try YYYY-MM-DD fallback
-    const m = String(x).match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    const origD = new Date(origX);
+    if (!isNaN(origD)) return origD;
+    const origM = String(origX).match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+    if (origM) return new Date(+origM[1], +origM[2] - 1, +origM[3]);
     return null;
   }
 
-  function yearFrom(x) {
-    const d = parseAnyDate(x);
-    return d ? d.getFullYear() : null;
+  function origYearFrom(origX) {
+    const origD = origParseAnyDate(origX);
+    return origD ? origD.getFullYear() : null;
   }
 
-  function fmt(n) { return d3.format(',')(n); }
-  const round2 = d3.format('.2f');
+  function origFmt(origN) { return d3.format(',')(origN); }
+  const origRound2 = d3.format('.2f');
 
-  // --- Data Loading ----------------------------------------------------------
-  let satRows = null;
+  let origSatRows = null;
 
-  // Load default dataset
-  d3.csv("space_decay.csv").then(data => {
-    satRows = data;
-    buildAll();
-  }).catch(err => {
-    console.error("Error loading space_decay.csv:", err);
+  d3.csv("space_decay.csv").then(origData => {
+    origSatRows = origData;
+    origBuildAll();
+  }).catch(origErr => {
+    console.error("Error loading space_decay.csv:", origErr);
   });
 
-  // Optional: File input listener if user wants to override
-  const fileInput = document.getElementById('satCsv');
-  if (fileInput) {
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const text = await file.text();
-      satRows = d3.csvParse(text);
-      if (satRows) { buildAll(); }
+  const origFileInput = document.getElementById('aadiss-satCsv');
+  if (origFileInput) {
+    origFileInput.addEventListener('change', async (origE) => {
+      const origFile = origE.target.files?.[0];
+      if (!origFile) return;
+      const origText = await origFile.text();
+      origSatRows = d3.csvParse(origText);
+      if (origSatRows) { origBuildAll(); }
     });
   }
 
-  // --- Build both charts ----------------------------------------------------
-  function buildAll() {
-    if (!satRows) return;
+  function origBuildAll() {
+    if (!origSatRows) return;
     try {
-      buildRatioChart(satRows);
-    } catch (err) {
-      console.error('buildAll: Error in buildRatioChart:', err);
+      origBuildRatioChart(origSatRows);
+    } catch (origErr) {
+      console.error('buildAll: Error in buildRatioChart:', origErr);
     }
     try {
-      buildTimeChart(satRows);
-    } catch (err) {
-      console.error('buildAll: Error in buildTimeChart:', err);
+      origBuildTimeChart(origSatRows);
+    } catch (origErr) {
+      console.error('buildAll: Error in buildTimeChart:', origErr);
     }
   }
 
-  // --------------------------------------------------------------------------
-  // Chart 1 — Cleveland Dot Plot: Debris-to-Payload ratio by COUNTRY_CODE
-  // --------------------------------------------------------------------------
-  function buildRatioChart(rows) {
-    const svg = d3.select('#ratioSvg');
-    if (svg.empty()) return;
+  function origBuildRatioChart(origRows) {
+    const origSvg = d3.select('#aadiss-ratioSvg');
+    if (origSvg.empty()) return;
 
-    svg.selectAll('*').remove();
-    const container = svg.node().parentElement;
-    const containerWidth = container.getBoundingClientRect().width || container.clientWidth || 900;
-    const W = containerWidth;
-    const H = +svg.attr('height') || 560;
-    svg.attr('width', W);
-    const margin = { top: 30, right: 80, bottom: 40, left: 90 };
-    const innerW = W - margin.left - margin.right;
-    const innerH = H - margin.top - margin.bottom;
-    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+    origSvg.selectAll('*').remove();
+    const origContainer = origSvg.node().parentElement;
+    const origContainerWidth = origContainer.getBoundingClientRect().width || origContainer.clientWidth || 900;
+    const origW = origContainerWidth;
+    const origH = +origSvg.attr('height') || 560;
+    origSvg.attr('width', origW);
+    const origMargin = { top: 30, right: 80, bottom: 40, left: 90 };
+    const origInnerW = origW - origMargin.left - origMargin.right;
+    const origInnerH = origH - origMargin.top - origMargin.bottom;
+    const origG = origSvg.append('g').attr('transform', `translate(${origMargin.left},${origMargin.top})`);
 
-    // Compute payload & debris counts per country code
-    const byCountry = d3.rollups(
-      rows,
-      v => {
-        const payload = d3.sum(v, d => normalizeType(d.OBJECT_TYPE) === 'PAYLOAD' ? 1 : 0);
-        const debris = d3.sum(v, d => normalizeType(d.OBJECT_TYPE) === 'DEBRIS' ? 1 : 0);
-        const total = payload + debris;
-        const ratio = payload > 0 ? (debris / payload) : NaN;
-        return { payload, debris, total, ratio };
+    const origByCountry = d3.rollups(
+      origRows,
+      origV => {
+        const origPayload = d3.sum(origV, origD => origNormalizeType(origD.OBJECT_TYPE) === 'PAYLOAD' ? 1 : 0);
+        const origDebris = d3.sum(origV, origD => origNormalizeType(origD.OBJECT_TYPE) === 'DEBRIS' ? 1 : 0);
+        const origTotal = origPayload + origDebris;
+        const origRatio = origPayload > 0 ? (origDebris / origPayload) : NaN;
+        return { payload: origPayload, debris: origDebris, total: origTotal, ratio: origRatio };
       },
-      d => (d.COUNTRY_CODE || '').toString().trim()
+      origD => (origD.COUNTRY_CODE || '').toString().trim()
     )
-      .filter(([cc, m]) => cc && isFinite(m.ratio) && m.payload > 0);
+      .filter(([origCc, origM]) => origCc && isFinite(origM.ratio) && origM.payload > 0);
 
-    // Controls
-    const topNEl = document.getElementById('topNSlider');
-    const topNVal = document.getElementById('topNVal');
-    const minTotEl = document.getElementById('minTotSlider');
-    const minTotVal = document.getElementById('minTotVal');
-    const sortSel = document.getElementById('sortBy');
+    const origTopNEl = document.getElementById('aadiss-topNSlider');
+    const origTopNVal = document.getElementById('aadiss-topNVal');
+    const origMinTotEl = document.getElementById('aadiss-minTotSlider');
+    const origMinTotVal = document.getElementById('aadiss-minTotVal');
+    const origSortSel = document.getElementById('aadiss-sortBy');
 
-    function deriveData() {
-      const minTot = minTotEl ? +minTotEl.value : 0;
-      const sortBy = sortSel ? sortSel.value : 'ratio';
+    function origDeriveData() {
+      const origMinTot = origMinTotEl ? +origMinTotEl.value : 0;
+      const origSortBy = origSortSel ? origSortSel.value : 'ratio';
 
-      let data = byCountry
-        .map(([cc, m]) => ({ code: cc, ...m }))
-        .filter(d => d.total >= minTot);
+      let origData = origByCountry
+        .map(([origCc, origM]) => ({ code: origCc, ...origM }))
+        .filter(origD => origD.total >= origMinTot);
 
-      if (sortBy === 'ratio') data.sort((a, b) => d3.descending(a.ratio, b.ratio));
-      else if (sortBy === 'payload') data.sort((a, b) => d3.descending(a.payload, b.payload));
-      else if (sortBy === 'debris') data.sort((a, b) => d3.descending(a.debris, b.debris));
-      else if (sortBy === 'alpha') data.sort((a, b) => d3.ascending(a.code, b.code));
+      if (origSortBy === 'ratio') origData.sort((origA, origB) => d3.descending(origA.ratio, origB.ratio));
+      else if (origSortBy === 'payload') origData.sort((origA, origB) => d3.descending(origA.payload, origB.payload));
+      else if (origSortBy === 'debris') origData.sort((origA, origB) => d3.descending(origA.debris, origB.debris));
+      else if (origSortBy === 'alpha') origData.sort((origA, origB) => d3.ascending(origA.code, origB.code));
 
-      const topN = topNEl ? +topNEl.value : 15;
-      data = data.slice(0, topN);
-      return data;
+      const origTopN = origTopNEl ? +origTopNEl.value : 15;
+      origData = origData.slice(0, origTopN);
+      return origData;
     }
 
-    function render() {
-      const data = deriveData();
-      const xMax = d3.max(data, d => d.ratio) || 1;
-      const x = d3.scaleLinear().domain([0, xMax * 1.05]).range([0, innerW]);
-      const y = d3.scaleBand().domain(data.map(d => d.code)).range([0, innerH]).padding(0.5);
+    function origRender() {
+      const origData = origDeriveData();
+      const origXMax = d3.max(origData, origD => origD.ratio) || 1;
+      const origX = d3.scaleLinear().domain([0, origXMax * 1.05]).range([0, origInnerW]);
+      const origY = d3.scaleBand().domain(origData.map(origD => origD.code)).range([0, origInnerH]).padding(0.5);
 
-      // Axes
-      g.selectAll('.axis').remove();
-      g.append('g').attr('class', 'axis').attr('transform', `translate(0,${innerH})`)
-        .call(d3.axisBottom(x).ticks(8).tickSizeOuter(0));
-      g.append('g').attr('class', 'axis').call(d3.axisLeft(y).tickSizeOuter(0));
+      origG.selectAll('.aadiss-axis').remove();
+      origG.append('g').attr('class', 'aadiss-axis').attr('transform', `translate(0,${origInnerH})`)
+        .call(d3.axisBottom(origX).ticks(8).tickSizeOuter(0));
+      origG.append('g').attr('class', 'aadiss-axis').call(d3.axisLeft(origY).tickSizeOuter(0));
 
-      // Row guide lines
-      const lines = g.selectAll('.row-line').data(data, d => d.code);
-      lines.join(
-        enter => enter.append('line')
-          .attr('class', 'row-line')
+      const origLines = origG.selectAll('.aadiss-row-line').data(origData, origD => origD.code);
+      origLines.join(
+        origEnter => origEnter.append('line')
+          .attr('class', 'aadiss-row-line')
           .attr('x1', 0).attr('x2', 0)
-          .attr('y1', d => y(d.code)).attr('y2', d => y(d.code))
-          .transition().duration(450).attr('x2', d => x(d.ratio)),
-        update => update.transition().duration(450)
-          .attr('y1', d => y(d.code)).attr('y2', d => y(d.code))
-          .attr('x2', d => x(d.ratio)),
-        exit => exit.transition().duration(250).attr('x2', 0).remove()
+          .attr('y1', origD => origY(origD.code)).attr('y2', origD => origY(origD.code))
+          .transition().duration(450).attr('x2', origD => origX(origD.ratio)),
+        origUpdate => origUpdate.transition().duration(450)
+          .attr('y1', origD => origY(origD.code)).attr('y2', origD => origY(origD.code))
+          .attr('x2', origD => origX(origD.ratio)),
+        origExit => origExit.transition().duration(250).attr('x2', 0).remove()
       );
 
-      // Dots
-      const dots = g.selectAll('.ratio-dot').data(data, d => d.code);
-      dots.join(
-        enter => enter.append('circle')
-          .attr('class', 'ratio-dot')
+      const origDots = origG.selectAll('.aadiss-ratio-dot').data(origData, origD => origD.code);
+      origDots.join(
+        origEnter => origEnter.append('circle')
+          .attr('class', 'aadiss-ratio-dot')
           .attr('r', 6.5)
           .attr('cx', 0)
-          .attr('cy', d => y(d.code))
+          .attr('cy', origD => origY(origD.code))
           .style('cursor', 'pointer')
-          .on('mouseenter', (ev, d) => {
-            d3.select(ev.currentTarget).attr('r', 8);
-            showTip(ev, d);
+          .on('mouseenter', (origEv, origD) => {
+            d3.select(origEv.currentTarget).attr('r', 8);
+            origShowTip(origEv, origD);
           })
-          .on('mousemove', (ev, d) => moveTip(ev))
-          .on('mouseleave', (ev) => {
-            d3.select(ev.currentTarget).attr('r', 6.5);
-            hideTip();
+          .on('mousemove', (origEv) => origMoveTip(origEv))
+          .on('mouseleave', (origEv) => {
+            d3.select(origEv.currentTarget).attr('r', 6.5);
+            origHideTip();
           })
-          .on('click', (ev, d) => {
-            const sel = d3.select(ev.currentTarget.parentNode).selectAll('.ratio-dot');
-            sel.classed('highlight', false);
-            d3.select(ev.currentTarget).classed('highlight', !d3.select(ev.currentTarget).classed('highlight'));
+          .on('click', (origEv) => {
+            const origSel = d3.select(origEv.currentTarget.parentNode).selectAll('.aadiss-ratio-dot');
+            origSel.classed('aadiss-highlight', false);
+            d3.select(origEv.currentTarget).classed('aadiss-highlight', !d3.select(origEv.currentTarget).classed('aadiss-highlight'));
           })
           .transition().duration(450)
-          .attr('cx', d => x(d.ratio)),
-        update => update.transition().duration(450)
-          .attr('cy', d => y(d.code))
-          .attr('cx', d => x(d.ratio)),
-        exit => exit.transition().duration(250).attr('cx', 0).remove()
+          .attr('cx', origD => origX(origD.ratio)),
+        origUpdate => origUpdate.transition().duration(450)
+          .attr('cy', origD => origY(origD.code))
+          .attr('cx', origD => origX(origD.ratio)),
+        origExit => origExit.transition().duration(250).attr('cx', 0).remove()
       );
 
-      // Labels
-      const labels = g.selectAll('.ratio-label').data(data, d => d.code);
-      labels.join(
-        enter => enter.append('text')
-          .attr('class', 'ratio-label')
-          .attr('x', d => x(d.ratio) + 8)
-          .attr('y', d => y(d.code) + 4)
-          .text(d => round2(d.ratio)),
-        update => update.transition().duration(450)
-          .attr('x', d => x(d.ratio) + 8)
-          .attr('y', d => y(d.code) + 4)
-          .text(d => round2(d.ratio)),
-        exit => exit.remove()
+      const origLabels = origG.selectAll('.aadiss-ratio-label').data(origData, origD => origD.code);
+      origLabels.join(
+        origEnter => origEnter.append('text')
+          .attr('class', 'aadiss-ratio-label')
+          .attr('x', origD => origX(origD.ratio) + 8)
+          .attr('y', origD => origY(origD.code) + 4)
+          .text(origD => origRound2(origD.ratio)),
+        origUpdate => origUpdate.transition().duration(450)
+          .attr('x', origD => origX(origD.ratio) + 8)
+          .attr('y', origD => origY(origD.code) + 4)
+          .text(origD => origRound2(origD.ratio)),
+        origExit => origExit.remove()
       );
 
-      // Title & subtitle
-      svg.selectAll('.headings').remove();
-      const heads = svg.append('g').attr('class', 'headings')
-        .attr('transform', `translate(${margin.left},${16})`);
-      heads.append('text').attr('x', innerW / 2).attr('text-anchor', 'middle')
+      origSvg.selectAll('.aadiss-headings').remove();
+      const origHeads = origSvg.append('g').attr('class', 'aadiss-headings')
+        .attr('transform', `translate(${origMargin.left},${16})`);
+      origHeads.append('text').attr('x', origInnerW / 2).attr('text-anchor', 'middle')
         .attr('font-size', 18).attr('font-weight', 700).style('fill', 'var(--fg)')
-        .text('Debris-to-Payload Ratio by Country (Top ' + data.length + ')');
-      heads.append('text').attr('x', innerW / 2).attr('y', 20).attr('text-anchor', 'middle')
+        .text('Debris-to-Payload Ratio by Country (Top ' + origData.length + ')');
+      origHeads.append('text').attr('x', origInnerW / 2).attr('y', 20).attr('text-anchor', 'middle')
         .style('fill', 'var(--muted)').attr('font-size', 13)
         .text('Higher ratios indicate more debris per operational payload');
 
-      function showTip(ev, d) {
-        if (tip.empty()) return;
-        tip.style('display', 'block')
+      function origShowTip(origEv, origD) {
+        if (origTip.empty()) return;
+        origTip.style('display', 'block')
           .html(
-            `<strong>${d.code}</strong><br/>
-             Debris: ${fmt(d.debris)}<br/>
-             Payload: ${fmt(d.payload)}<br/>
-             Ratio: <strong>${round2(d.ratio)}</strong>`
+            `<strong>${origD.code}</strong><br/>
+             Debris: ${origFmt(origD.debris)}<br/>
+             Payload: ${origFmt(origD.payload)}<br/>
+             Ratio: <strong>${origRound2(origD.ratio)}</strong>`
           );
-        moveTip(ev);
+        origMoveTip(origEv);
       }
 
-      function moveTip(ev) {
-        if (tip.empty()) return;
-        tip.style('left', (ev.pageX + 12) + 'px')
-          .style('top', (ev.pageY + 12) + 'px');
+      function origMoveTip(origEv) {
+        if (origTip.empty()) return;
+        origTip.style('left', (origEv.pageX + 12) + 'px')
+          .style('top', (origEv.pageY + 12) + 'px');
       }
 
-      function hideTip() { if (!tip.empty()) tip.style('display', 'none'); }
+      function origHideTip() { if (!origTip.empty()) origTip.style('display', 'none'); }
     }
 
-    // Bind control events
-    if (topNEl) topNEl.addEventListener('input', () => { if (topNVal) topNVal.textContent = topNEl.value; render(); });
-    if (minTotEl) minTotEl.addEventListener('input', () => { if (minTotVal) minTotVal.textContent = minTotEl.value; render(); });
-    if (sortSel) sortSel.addEventListener('change', render);
+    if (origTopNEl) origTopNEl.addEventListener('input', () => { if (origTopNVal) origTopNVal.textContent = origTopNEl.value; origRender(); });
+    if (origMinTotEl) origMinTotEl.addEventListener('input', () => { if (origMinTotVal) origMinTotVal.textContent = origMinTotEl.value; origRender(); });
+    if (origSortSel) origSortSel.addEventListener('change', origRender);
 
-    // Initial
-    if (topNVal && topNEl) topNVal.textContent = topNEl.value;
-    if (minTotVal && minTotEl) minTotVal.textContent = minTotEl.value;
+    if (origTopNVal && origTopNEl) origTopNVal.textContent = origTopNEl.value;
+    if (origMinTotVal && origMinTotEl) origMinTotVal.textContent = origMinTotEl.value;
 
-    // Only render when the container comes into view
-    const ratioSection = document.getElementById('ratioSec');
-    if (ratioSection) {
-      const scrollyContainer = ratioSection.closest('.scrolly-container-single');
-      if (scrollyContainer) {
-        // Listen for scroll-into-view event
-        scrollyContainer.addEventListener('scrolly-inview', () => {
+    const origRatioSection = document.getElementById('aadiss-ratioSec');
+    if (origRatioSection) {
+      const origScrollyContainer = origRatioSection.closest('.aadiss-scrolly-container-single');
+      if (origScrollyContainer) {
+        origScrollyContainer.addEventListener('aadiss-scrolly-inview', () => {
           console.log('Ratio chart coming into view - rendering with animation');
-          render();
+          origRender();
         }, { once: true });
       } else {
-        // Fallback if not in a scrolly container
-        render();
+        origRender();
       }
     }
   }
 
-  // --------------------------------------------------------------------------
-  // Chart 2 — Time Series by Type (PAYLOAD / DEBRIS / ROCKET BODY)
-  // --------------------------------------------------------------------------
-  function buildTimeChart(rows) {
-    const svg = d3.select('#timeSvg');
-    const brushSvg = d3.select('#brushSvg');
-    if (svg.empty()) return;
+  function origBuildTimeChart(origRows) {
+    const origSvg = d3.select('#aadiss-timeSvg');
+    const origBrushSvg = d3.select('#aadiss-brushSvg');
+    if (origSvg.empty()) return;
 
-    svg.selectAll('*').remove();
-    brushSvg.selectAll('*').remove();
+    origSvg.selectAll('*').remove();
+    origBrushSvg.selectAll('*').remove();
 
-    const container = svg.node().parentElement;
-    const containerWidth = container.getBoundingClientRect().width || container.clientWidth || 900;
-    const W = containerWidth;
-    const H = +svg.attr('height') || 420;
-    svg.attr('width', W);
-    brushSvg.attr('width', W);
-    const margin = { top: 50, right: 20, bottom: 30, left: 56 };
-    const innerW = W - margin.left - margin.right;
-    const innerH = H - margin.top - margin.bottom;
-    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+    const origContainer = origSvg.node().parentElement;
+    const origContainerWidth = origContainer.getBoundingClientRect().width || origContainer.clientWidth || 900;
+    const origW = origContainerWidth;
+    const origH = +origSvg.attr('height') || 420;
+    origSvg.attr('width', origW);
+    origBrushSvg.attr('width', origW);
+    const origMargin = { top: 50, right: 20, bottom: 30, left: 56 };
+    const origInnerW = origW - origMargin.left - origMargin.right;
+    const origInnerH = origH - origMargin.top - origMargin.bottom;
+    const origG = origSvg.append('g').attr('transform', `translate(${origMargin.left},${origMargin.top})`);
 
-    // Normalize & group by year × type
-    const cleaned = rows.map(r => ({
-      year: yearFrom(r.LAUNCH_DATE),
-      type: normalizeType(r.OBJECT_TYPE)
-    })).filter(d => d.year && ['PAYLOAD', 'DEBRIS', 'ROCKET BODY'].includes(d.type));
+    const origCleaned = origRows.map(origR => ({
+      year: origYearFrom(origR.LAUNCH_DATE),
+      type: origNormalizeType(origR.OBJECT_TYPE)
+    })).filter(origD => origD.year && ['PAYLOAD', 'DEBRIS', 'ROCKET BODY'].includes(origD.type));
 
-    const countsByYearType = d3.rollups(
-      cleaned,
-      v => v.length,
-      d => d.year,
-      d => d.type
+    const origCountsByYearType = d3.rollups(
+      origCleaned,
+      origV => origV.length,
+      origD => origD.year,
+      origD => origD.type
     );
 
-    const years = Array.from(new Set(cleaned.map(d => d.year))).sort((a, b) => a - b);
-    const types = ['PAYLOAD', 'DEBRIS', 'ROCKET BODY'];
+    const origYears = Array.from(new Set(origCleaned.map(origD => origD.year))).sort((origA, origB) => origA - origB);
+    const origTypes = ['PAYLOAD', 'DEBRIS', 'ROCKET BODY'];
 
-    const series = types.map(t => {
-      let cumulative = 0;
+    const origSeries = origTypes.map(origT => {
+      let origCumulative = 0;
       return {
-        key: t,
-        values: years.map(y => {
-          const yearCount = (countsByYearType.find(([yy]) => yy === y)?.[1].find(([tt]) => tt === t)?.[1]) || 0;
-          cumulative += yearCount;
-          return { year: y, count: cumulative };
+        key: origT,
+        values: origYears.map(origY => {
+          const origYearCount = (origCountsByYearType.find(([origYy]) => origYy === origY)?.[1].find(([origTt]) => origTt === origT)?.[1]) || 0;
+          origCumulative += origYearCount;
+          return { year: origY, count: origCumulative };
         })
       };
     });
 
-    const x = d3.scaleLinear().domain(d3.extent(years)).range([0, innerW]);
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(series, s => d3.max(s.values, d => d.count)) * 1.1 || 10])
+    const origX = d3.scaleLinear().domain(d3.extent(origYears)).range([0, origInnerW]);
+    const origY = d3.scaleLinear()
+      .domain([0, d3.max(origSeries, origS => d3.max(origS.values, origD => origD.count)) * 1.1 || 10])
       .nice()
-      .range([innerH, 0]);
+      .range([origInnerH, 0]);
 
-    // Use hex codes directly to ensure visibility
-    const color = d3.scaleOrdinal()
-      .domain(types)
+    const origColor = d3.scaleOrdinal()
+      .domain(origTypes)
       .range(['#3b82f6', '#f97316', '#10b981']);
 
-    // Axes
-    g.append('g').attr('class', 'axis')
-      .attr('transform', `translate(0,${innerH})`)
-      .call(d3.axisBottom(x).ticks(10).tickFormat(d3.format('d')));
-    g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(6));
+    origG.append('g').attr('class', 'aadiss-axis')
+      .attr('transform', `translate(0,${origInnerH})`)
+      .call(d3.axisBottom(origX).ticks(10).tickFormat(d3.format('d')));
+    origG.append('g').attr('class', 'aadiss-axis').call(d3.axisLeft(origY).ticks(6));
 
-    // Grid
-    g.append('g').attr('class', 'grid')
-      .call(d3.axisLeft(y).tickSize(-innerW).tickFormat(''))
+    origG.append('g').attr('class', 'aadiss-grid')
+      .call(d3.axisLeft(origY).tickSize(-origInnerW).tickFormat(''))
       .selectAll('line').attr('stroke-opacity', 0.3);
 
-    // Add clip path to prevent lines from crossing axes
-    svg.append('defs').append('clipPath')
-      .attr('id', 'time-chart-clip')
+    origSvg.append('defs').append('clipPath')
+      .attr('id', 'aadiss-time-chart-clip')
       .append('rect')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', innerW)
-      .attr('height', innerH);
+      .attr('width', origInnerW)
+      .attr('height', origInnerH);
 
-    // Lines
-    const line = d3.line()
-      .x(d => x(d.year))
-      .y(d => y(d.count))
+    const origLine = d3.line()
+      .x(origD => origX(origD.year))
+      .y(origD => origY(origD.count))
       .curve(d3.curveMonotoneX);
 
-    const seriesG = g.append('g')
-      .attr('clip-path', 'url(#time-chart-clip)');
+    const origSeriesG = origG.append('g')
+      .attr('clip-path', 'url(#aadiss-time-chart-clip)');
 
-    const paths = seriesG.selectAll('.series').data(series, d => d.key).join(enter => {
-      const sg = enter.append('g').attr('class', 'series active').attr('data-key', d => d.key);
-      sg.append('path')
+    const origPaths = origSeriesG.selectAll('.aadiss-series').data(origSeries, origD => origD.key).join(origEnter => {
+      const origSg = origEnter.append('g').attr('class', 'aadiss-series aadiss-active').attr('data-key', origD => origD.key);
+      origSg.append('path')
         .attr('fill', 'none')
-        .attr('stroke', d => color(d.key))
+        .attr('stroke', origD => origColor(origD.key))
         .attr('stroke-width', 2.5)
-        .attr('d', d => line(d.values));
-      return sg;
+        .attr('d', origD => origLine(origD.values));
+      return origSg;
     });
 
-    // Add invisible hover areas for tooltips
-    const hoverG = g.append('g').attr('clip-path', 'url(#time-chart-clip)');
-    series.forEach(s => {
-      const hoverArea = hoverG.append('g')
-        .attr('class', 'hover-area')
-        .attr('data-key', s.key);
+    const origHoverG = origG.append('g').attr('clip-path', 'url(#aadiss-time-chart-clip)');
+    origSeries.forEach(origS => {
+      const origHoverArea = origHoverG.append('g')
+        .attr('class', 'aadiss-hover-area')
+        .attr('data-key', origS.key);
 
-      s.values.forEach(point => {
-        hoverArea.append('circle')
-          .attr('cx', x(point.year))
-          .attr('cy', y(point.count))
+      origS.values.forEach(origPoint => {
+        origHoverArea.append('circle')
+          .attr('cx', origX(origPoint.year))
+          .attr('cy', origY(origPoint.count))
           .attr('r', 6)
           .attr('fill', 'transparent')
           .attr('stroke', 'transparent')
           .style('cursor', 'pointer')
-          .on('mouseenter', function (ev) {
-            d3.select(this).attr('fill', color(s.key)).attr('stroke', '#fff').attr('stroke-width', 2);
-            if (!tip.empty()) {
-              tip.style('display', 'block')
-                .html(`<strong>${s.key}</strong><br/>Year: ${point.year}<br/>Count: ${fmt(point.count)}`);
-              tip.style('left', (ev.pageX + 12) + 'px')
-                .style('top', (ev.pageY + 12) + 'px');
+          .on('mouseenter', function (origEv) {
+            d3.select(this).attr('fill', origColor(origS.key)).attr('stroke', '#fff').attr('stroke-width', 2);
+            if (!origTip.empty()) {
+              origTip.style('display', 'block')
+                .html(`<strong>${origS.key}</strong><br/>Year: ${origPoint.year}<br/>Count: ${origFmt(origPoint.count)}`);
+              origTip.style('left', (origEv.pageX + 12) + 'px')
+                .style('top', (origEv.pageY + 12) + 'px');
             }
           })
-          .on('mousemove', function (ev) {
-            if (!tip.empty()) {
-              tip.style('left', (ev.pageX + 12) + 'px')
-                .style('top', (ev.pageY + 12) + 'px');
+          .on('mousemove', function (origEv) {
+            if (!origTip.empty()) {
+              origTip.style('left', (origEv.pageX + 12) + 'px')
+                .style('top', (origEv.pageY + 12) + 'px');
             }
           })
           .on('mouseleave', function () {
             d3.select(this).attr('fill', 'transparent').attr('stroke', 'transparent');
-            if (!tip.empty()) tip.style('display', 'none');
+            if (!origTip.empty()) origTip.style('display', 'none');
           });
       });
     });
 
-    // Legend with checkboxes
-    const legend = svg.append('g').attr('class', 'legend')
-      .attr('transform', `translate(${margin.left + 20}, 20)`);
+    const origLegend = origSvg.append('g').attr('class', 'aadiss-legend')
+      .attr('transform', `translate(${origMargin.left + 20}, 20)`);
 
-    types.forEach((t, i) => {
-      const lg = legend.append('g').attr('class', 'legend-item')
-        .attr('transform', `translate(${i * 160},0)`);
+    origTypes.forEach((origT, origI) => {
+      const origLg = origLegend.append('g').attr('class', 'aadiss-legend-item')
+        .attr('transform', `translate(${origI * 160},0)`);
 
-      // Checkbox
-      const checkbox = lg.append('foreignObject')
+      const origCheckbox = origLg.append('foreignObject')
         .attr('width', 16)
         .attr('height', 16)
         .attr('y', -4)
-        .html(`<input type="checkbox" checked style="cursor:pointer; width:14px; height:14px;" data-type="${t}" />`);
+        .html(`<input type="checkbox" checked style="cursor:pointer; width:14px; height:14px;" data-type="${origT}" />`);
 
-      checkbox.select('input').on('change', function () {
-        const isChecked = this.checked;
-        const seriesPath = seriesG.select(`.series[data-key="${t}"]`);
-        const hoverArea = hoverG.select(`.hover-area[data-key="${t}"]`);
+      origCheckbox.select('input').on('change', function () {
+        const origIsChecked = this.checked;
+        const origSeriesPath = origSeriesG.select(`.aadiss-series[data-key="${origT}"]`);
+        const origHoverArea = origHoverG.select(`.aadiss-hover-area[data-key="${origT}"]`);
 
-        if (isChecked) {
-          seriesPath.classed('active', true).style('opacity', 1);
-          hoverArea.style('display', 'block');
+        if (origIsChecked) {
+          origSeriesPath.classed('aadiss-active', true).style('opacity', 1);
+          origHoverArea.style('display', 'block');
         } else {
-          seriesPath.classed('active', false).style('opacity', 0);
-          hoverArea.style('display', 'none');
+          origSeriesPath.classed('aadiss-active', false).style('opacity', 0);
+          origHoverArea.style('display', 'none');
         }
       });
 
-      // Color indicator
-      lg.append('rect').attr('x', 20).attr('y', 0).attr('width', 12).attr('height', 12).attr('rx', 2)
-        .attr('fill', color(t));
+      origLg.append('rect').attr('x', 20).attr('y', 0).attr('width', 12).attr('height', 12).attr('rx', 2)
+        .attr('fill', origColor(origT));
 
-      // Label
-      lg.append('text').attr('x', 36).attr('y', 10)
+      origLg.append('text').attr('x', 36).attr('y', 10)
         .style('font-size', '12px')
         .style('fill', '#e2e8f0')
-        .text(t);
+        .text(origT);
     });
 
-    // Brush (Mini chart)
-    const brushH = 80;
-    const brushMargin = { top: 10, right: 20, bottom: 20, left: 56 };
-    const brushInnerH = brushH - brushMargin.top - brushMargin.bottom;
+    const origBrushH = 80;
+    const origBrushMargin = { top: 10, right: 20, bottom: 20, left: 56 };
+    const origBrushInnerH = origBrushH - origBrushMargin.top - origBrushMargin.bottom;
 
-    const bg = brushSvg.append('g').attr('transform', `translate(${brushMargin.left},${brushMargin.top})`);
-    const x2 = d3.scaleLinear().domain(x.domain()).range([0, innerW]);
-    const y2 = d3.scaleLinear().domain(y.domain()).range([brushInnerH, 0]);
+    const origBg = origBrushSvg.append('g').attr('transform', `translate(${origBrushMargin.left},${origBrushMargin.top})`);
+    const origX2 = d3.scaleLinear().domain(origX.domain()).range([0, origInnerW]);
+    const origY2 = d3.scaleLinear().domain(origY.domain()).range([origBrushInnerH, 0]);
 
-    const line2 = d3.line().x(d => x2(d.year)).y(d => y2(d.count)).curve(d3.curveMonotoneX);
+    const origLine2 = d3.line().x(origD => origX2(origD.year)).y(origD => origY2(origD.count)).curve(d3.curveMonotoneX);
 
-    bg.selectAll('.mini-series').data(series).join('path')
-      .attr('class', 'mini-series')
+    origBg.selectAll('.aadiss-mini-series').data(origSeries).join('path')
+      .attr('class', 'aadiss-mini-series')
       .attr('fill', 'none')
-      .attr('stroke', d => color(d.key))
+      .attr('stroke', origD => origColor(origD.key))
       .attr('stroke-width', 1.5)
       .attr('opacity', 0.6)
-      .attr('d', d => line2(d.values));
+      .attr('d', origD => origLine2(origD.values));
 
-    bg.append('g').attr('class', 'axis').attr('transform', `translate(0,${brushInnerH})`)
-      .call(d3.axisBottom(x2).ticks(10).tickFormat(d3.format('d')));
+    origBg.append('g').attr('class', 'aadiss-axis').attr('transform', `translate(0,${origBrushInnerH})`)
+      .call(d3.axisBottom(origX2).ticks(10).tickFormat(d3.format('d')));
 
-    const brush = d3.brushX()
-      .extent([[0, 0], [innerW, brushInnerH]])
-      .on('brush end', brushed);
+    const origBrush = d3.brushX()
+      .extent([[0, 0], [origInnerW, origBrushInnerH]])
+      .on('brush end', origBrushed);
 
-    bg.append('g').attr('class', 'brush').call(brush);
+    origBg.append('g').attr('class', 'aadiss-brush').call(origBrush);
 
-    function brushed(event) {
-      const s = event.selection;
-      if (!s) {
-        x.domain(d3.extent(years));
+    function origBrushed(origEvent) {
+      const origS = origEvent.selection;
+      if (!origS) {
+        origX.domain(d3.extent(origYears));
       } else {
-        x.domain([x2.invert(s[0]), x2.invert(s[1])]);
+        origX.domain([origX2.invert(origS[0]), origX2.invert(origS[1])]);
       }
-      g.select('.axis').call(d3.axisBottom(x).ticks(10).tickFormat(d3.format('d')));
-      paths.select('path').attr('d', d => line(d.values));
-      // Update hover circles positions
-      series.forEach(s => {
-        hoverG.select(`.hover-area[data-key="${s.key}"]`).selectAll('circle')
-          .data(s.values)
-          .attr('cx', d => x(d.year))
-          .attr('cy', d => y(d.count));
+      origG.select('.aadiss-axis').call(d3.axisBottom(origX).ticks(10).tickFormat(d3.format('d')));
+      origPaths.select('path').attr('d', origD => origLine(origD.values));
+      origSeries.forEach(origS => {
+        origHoverG.select(`.aadiss-hover-area[data-key="${origS.key}"]`).selectAll('circle')
+          .data(origS.values)
+          .attr('cx', origD => origX(origD.year))
+          .attr('cy', origD => origY(origD.count));
       });
     }
   }
